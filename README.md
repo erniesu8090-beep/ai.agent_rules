@@ -54,5 +54,26 @@
 
 越下層越優先。新專案可直接複製 `templates/` 裡的三個檔案開始。
 
+## 各工具自動讀取的規則檔
+
+| | Claude Code | Antigravity |
+|---|---|---|
+| 全域 | `~/.claude/CLAUDE.md` | `~/.gemini/GEMINI.md` |
+| 專案 | `CLAUDE.md`（**不會**自動讀 `AGENTS.md`） | `AGENTS.md`（原生支援）、`GEMINI.md` |
+| 子資料夾 | 子資料夾的 `CLAUDE.md`（處理該資料夾的檔案時才讀） | 往上層資料夾搜尋 `AGENTS.md`／`GEMINI.md` |
+| 模組化規則 | `.claude/rules/*.md`（可在檔頭指定只套用到哪些檔案）；全域 `~/.claude/rules/` | `.agents/rules/*.md`（或 `.agent/rules/`） |
+| 引用其他檔 | 在 `CLAUDE.md` 寫 `@檔案路徑` | — |
+
+- **只維護一份**：專案規則全部寫在 `AGENTS.md`；`CLAUDE.md` 只放一行 `@AGENTS.md` 當轉接頭（Claude Code 認的檔名是 `CLAUDE.md`）。專案內不需要 `GEMINI.md`。
+- **只給某個工具的內容**：Claude 專用的寫在 `CLAUDE.md` 的 `@AGENTS.md` 下一行；Antigravity 專用的放 `GEMINI.md`。一般情況不需要。
+- **模組化資料夾兩家不通用**：Claude Code 不讀 `.agents/rules/`，Antigravity 不讀 `.claude/rules/`。規則要拆檔又要共用時，放在 `.agents/rules/`，再在 `CLAUDE.md` 逐一引用：
+  ```
+  @AGENTS.md
+  @.agents/rules/gui.md
+  ```
+  規則不多時維持單一 `AGENTS.md` 即可。
+
+> 以上依 2026-10 時兩邊工具的說明整理，細節（例如 `.claude/rules/` 指定檔案範圍的寫法）以官方文件為準。
+
 > 這是公開倉庫：公司內部主機名稱、內網路徑、員工編號等資訊請寫在工作區或專案的規則檔，不要寫進這裡。
 > claude.ai 網頁版的 Instructions 是另外設定的，不會讀這個檔案。
