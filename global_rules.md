@@ -78,6 +78,7 @@ Google 雲端硬碟
 ## 3. 語言
 
 - 對話、程式碼註解、文件、commit 訊息一律使用繁體中文。
+- commit 訊息與 PR 說明不要加 `Co-Authored-By`、`Generated with` 等 AI 署名行。
 - 例外：批次檔（.bat）、VBScript（.vbs）盡量只用 ASCII（英文），避免編碼造成亂碼（細節見第 7 節）。
 
 ## 4. 規劃先行
