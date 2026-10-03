@@ -14,20 +14,20 @@
 
 ## 安裝
 
-三台有 AI 工具的電腦都要安裝：家用機、開發機、管制機。
+三台有 AI 工具的電腦都要安裝：住家開發機、公司開發機、管制機。
 
 1. 取得這個倉庫，放在 `D:\AI_Workspace\ai.agent_rules`：
-   - 家用機、開發機：`git clone`。
-   - 管制機（連不到 GitHub）：用 GitSync 同步。先在家用機或開發機用 GitSync「管理專案 / .venv」→「可加入的資料夾」把本倉庫加入清單並推送到 `.bundle`；再到管制機下載 `.bundle`，用「從 .bundle 建立」取得本倉庫。
+   - 住家開發機、公司開發機：從 GitHub `git clone`。
+   - 管制機（連不到 GitHub）：用 GitSync 同步。先在公司開發機用 GitSync「管理專案 / .venv」→「可加入的資料夾」把本倉庫加入清單並推送到 `.bundle`；再到管制機下載 `.bundle`，用「從 .bundle 建立」取得本倉庫。
 2. Windows：雙擊 `install.bat`，依提示按 `1`、`2` 或 `3` 選擇這台是哪一台電腦。
    Linux / macOS：執行 `sh install.sh`。
 3. 重新啟動 Claude Code / Antigravity。
 
 | 按鍵 | 電腦 |
 |---|---|
-| `1` | 家用機（home） |
-| `2` | 開發機（dev）：公司個人電腦，可連外網、不能連內網 |
-| `3` | 管制機（controlled）：公司電腦，連內網、安裝受限 |
+| `1` | 住家開發機（home）：住家個人電腦 |
+| `2` | 公司開發機（dev）：公司個人電腦，可連外網與 GitHub、不能連內網 |
+| `3` | 管制機（controlled）：公司電腦，唯一能連內網、外網與安裝受限 |
 
 安裝腳本會把 `global_rules.md` 加上一行 `THIS MACHINE: <電腦代號>`，複製到：
 
@@ -42,7 +42,7 @@
 
 1. 編輯倉庫裡的 `global_rules.md`（不要直接改安裝後的檔案，下次安裝會被覆蓋）。
 2. 重新執行安裝腳本。
-3. 用 GitSync 提交，推送到 `.bundle` 與 GitHub；其他電腦拉取後再執行一次安裝腳本。
+3. 提交並推送到 GitHub；公司開發機拉取後再推送到 `.bundle` 給管制機。各台拉取後再執行一次安裝腳本。
 
 ## 規則的三個層級
 

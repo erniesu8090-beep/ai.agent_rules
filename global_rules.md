@@ -13,20 +13,36 @@
 
 | 代號 | 電腦 | AI 工具 | 安裝軟體 | 網路 | 用途 |
 |---|---|---|---|---|---|
-| 家用機（home） | 家用個人電腦 | Claude Code、Antigravity | 不限 | 外網、GitHub | 個人專案 |
-| 開發機（dev） | 公司個人電腦，Win11 | Claude Code、Antigravity | 不限 | 外網、GitHub；**不能連公司內網** | 公司專案的主要開發 |
-| 管制機（controlled） | 公司電腦，Win10 22H2 | Antigravity | **受限**：無管理員權限、有防毒軟體攔截 | 公司內網（共用磁碟、NAS）；**不能連 GitHub**；PyPI、python.org、CDN、Google 雲端硬碟網頁實測可連 | 公司專案接力開發、內網功能驗證、發布 |
+| 住家開發機（home） | 住家個人電腦 | Claude Code、Antigravity | 不限 | 外網、GitHub；不能連公司內網 | 個人專案；公司專案開發（經 GitHub 與公司開發機同步） |
+| 公司開發機（dev） | 公司個人電腦，Win11 | Claude Code、Antigravity | 不限 | 外網、GitHub；不能連公司內網 | 公司專案開發；GitHub 與管制機之間的中繼 |
+| 管制機（controlled） | 公司電腦，Win10 22H2 | Antigravity | **受限**：無管理員權限、有防毒軟體攔截 | **唯一能連公司內網的電腦**（內網伺服器、NAS）；外網有限制：不能連 GitHub，PyPI、python.org、CDN、Google 雲端硬碟網頁實測可連，其他網站未確認 | 公司專案接力開發、內網功能驗證、發布 |
 | 同事電腦 | 公司同事使用 | 無 | 受限，通常沒有 Python | 公司內網 | 只執行發布出去的成品 |
 
+- 住家開發機與公司開發機合稱「開發機」，兩台都連不到公司內網。
 - 安裝後的規則檔最後一行 `THIS MACHINE:` 標示這台電腦的身分（home / dev / controlled），以此判斷目前在哪一台；沒有標示時先詢問使用者。
+- 管制機要用到表上沒列的外部網站或服務時，先請使用者在管制機實測能不能連，不要假設可以。
 - 每個專案的 `AGENTS.md` 要註明「目標執行環境」；沒有註明時先詢問使用者。
 
-## 2. 公司專案（開發機 ↔ 管制機接力開發）
+## 2. 公司專案（開發機與管制機接力開發）
 
 ### 同步（GitSync 自製版控工具）
-- 管制機連不到 GitHub，所以用自製的 GitSync 工具同步（`D:\AI_Workspace\.Git`，內含免安裝 Git 與說明文件 `README.md`）：
-  專案打包成 `.bundle` → 經 Google 雲端硬碟傳遞（管制機用 Chrome 手動上傳／下載；家用機、開發機由雲端硬碟電腦版自動同步）→ 另一台拉取。GitHub 私人倉庫只由家用機或開發機推送備份。
-- 只會帶過去**已 commit 的內容**，且只同步 `main` 分支。交接前先 commit 並推送到 `.bundle`；開始修改前先拉取，避免兩邊歷史分岔。
+版控流程（每一段都只傳已 commit 的內容）：
+
+```
+住家開發機
+  ↕ GitHub（私人倉庫）
+公司開發機
+  ↕ Google 雲端硬碟電腦版自動同步 .bundle
+Google 雲端硬碟
+  ↕ 管制機用 Chrome 手動上傳／下載 .bundle
+管制機
+  ↕ GitSync「網頁發布」
+公司內網伺服器（網站、NAS）
+```
+
+- 管制機連不到 GitHub，所以公司開發機與管制機之間用自製的 GitSync 工具（`D:\AI_Workspace\.Git`，內含免安裝 Git 與說明文件 `README.md`）把專案打包成 `.bundle` 傳遞。
+- 住家開發機與管制機之間沒有直接通道：住家的修改要先推到 GitHub，由公司開發機拉取後再推送到 `.bundle`；反方向亦同。
+- 只同步 `main` 分支。交接前先 commit 並推送；開始修改前先拉取，避免兩邊歷史分岔。
 - 專案必須放在 `D:\AI_Workspace` 底下兩層內，各台電腦的相對位置才會一致；不同資料夾的專案不可同名（`.bundle` 以資料夾名稱命名）。
 - 請使用者操作版控時，優先指示 GitSync 視窗版（`GitSync_GUI.vbs`）的按鈕；手動 git 指令只當備案，管制機上的 git 是 `D:\AI_Workspace\.Git\PortableGit\cmd\git.exe`。
 - `.venv`、`runtime\`、大型壓縮檔不進 Git，每台各自建立；`.venv` 用 GitSync 的「管理專案 / .venv」建立或更新。
@@ -35,7 +51,7 @@
 ### 管制機的限制
 - 只能安裝「僅限目前使用者、不需管理員權限」的軟體；出現管理員權限要求（UAC 視窗、盾牌圖示）就停下來，不要嘗試繞過。
 - Python 3.11.9 以「僅限目前使用者」安裝、未加入 PATH：建 venv 用 `py -3.11 -m venv .venv`，執行一律用 `.venv\Scripts\python.exe`。不要直接呼叫 `python`，在管制機上它會指到 Windows 內建的假捷徑。
-- 兩台 Python 都維持 3.11 系列；`requirements.txt` 鎖定版本，避免兩台裝到不同版本。
+- 各台電腦的 Python 都維持 3.11 系列；`requirements.txt` 鎖定版本，避免各台裝到不同版本。
 - 主控台字碼頁是 950（Big5）：讀寫檔案一律明確指定 `encoding="utf-8"`；要給 Excel 開的 CSV 用 `utf-8-sig`；在 cmd 用 `type` 看 UTF-8 檔案會亂碼，請改用記事本開。
 
 ### 內網與發布

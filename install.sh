@@ -10,7 +10,7 @@ ts=$(date +%Y%m%d_%H%M%S)
 
 machine="$1"
 if [ -z "$machine" ]; then
-    echo "這台是哪一台電腦？ [1] home 家用機  [2] dev 開發機  [3] controlled 管制機"
+    echo "這台是哪一台電腦？ [1] home 住家開發機  [2] dev 公司開發機  [3] controlled 管制機"
     printf "請輸入 1、2 或 3："
     read -r ans
     case "$ans" in
