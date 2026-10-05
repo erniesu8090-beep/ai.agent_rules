@@ -2,6 +2,7 @@
 # 管制機專屬規則（只安裝在管制機）
 
 > 本段由 `install.bat controlled` 附加在全域規則之後，只有管制機上的 AI 工具看得到。開發機（home／dev）不受本段限制。
+> 本段限制的是「AI 在這台電腦上的操作」；「成品本身」的防毒相容規則在全域規則第 2 節，三台都適用。
 > 規則本體在 ai.agent_rules 倉庫的 `machine_rules/controlled.md`。
 
 ## A. 防毒行為監控（Apex One）
