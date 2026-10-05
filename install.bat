@@ -1,7 +1,7 @@
 @echo off
 rem Install global AI agent rules (ASCII only)
-rem   global_rules.md + machine tag -> %USERPROFILE%\.claude\CLAUDE.md  (Claude Code)
-rem   global_rules.md + machine tag -> %USERPROFILE%\.gemini\GEMINI.md  (Antigravity)
+rem   global_rules.md + machine_rules\<machine>.md + machine tag -> %USERPROFILE%\.claude\CLAUDE.md  (Claude Code)
+rem   global_rules.md + machine_rules\<machine>.md + machine tag -> %USERPROFILE%\.gemini\GEMINI.md  (Antigravity)
 rem Existing files are backed up as *.YYYYMMDD_HHMMSS.bak before overwrite.
 rem Usage: install.bat [home|dev|controlled]   (no argument = ask)
 setlocal
@@ -30,6 +30,8 @@ if /i not "%MACHINE%"=="home" if /i not "%MACHINE%"=="dev" if /i not "%MACHINE%"
 rem Build the final rules file: global_rules.md + machine tag line
 set "SRC=%TEMP%\ai_agent_rules_%RANDOM%.md"
 copy /y "global_rules.md" "%SRC%" >nul || goto :fail
+rem Machine-only rules (e.g. antivirus limits for the controlled PC)
+if exist "machine_rules\%MACHINE%.md" type "machine_rules\%MACHINE%.md" >>"%SRC%"
 >>"%SRC%" echo.
 >>"%SRC%" echo ---
 >>"%SRC%" echo THIS MACHINE: %MACHINE%

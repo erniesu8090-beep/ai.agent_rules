@@ -29,7 +29,7 @@
 | `2` | 公司開發機（dev）：公司個人電腦，可連外網與 GitHub、不能連內網 |
 | `3` | 管制機（controlled）：公司電腦，唯一能連內網、外網與安裝受限 |
 
-安裝腳本會把 `global_rules.md` 加上一行 `THIS MACHINE: <電腦代號>`，複製到：
+安裝腳本會把 `global_rules.md`，加上這台電腦的專屬規則 `machine_rules\<電腦代號>.md`（有這個檔案才加），最後加一行 `THIS MACHINE: <電腦代號>`，複製到：
 
 | 工具 | 位置 |
 |---|---|
@@ -38,9 +38,26 @@
 
 原本已有的檔案會先備份成 `CLAUDE.md.日期_時間.bak`，內容相同則略過。
 
+### 各台電腦的專屬規則（machine_rules）
+
+| 檔案 | 安裝到 | 內容 |
+|---|---|---|
+| `machine_rules\controlled.md` | 只有管制機 | 防毒行為監控的禁止事項（終端機不產生腳本、不用 `-ExecutionPolicy Bypass`、啟動器請使用者雙擊）、PowerShell 5.1 語法、被擋的網域 |
+
+- 住家開發機與公司開發機不會安裝這些限制，所以那兩台的 Claude Code / Antigravity 可以照常在終端機測試。
+- 專案裡的 `AGENTS.md` 三台共用，不寫各台電腦的限制。
+- 要給某一台加專屬規則時，新增 `machine_rules\home.md` 或 `machine_rules\dev.md` 即可，安裝腳本會自動附加。
+
+### 管制機上的 Antigravity 設定建議
+
+| 設定 | 建議值 | 原因 |
+|---|---|---|
+| Terminal Command Auto Execution | Always Proceed | 防毒限制已寫進管制機專屬規則，AI 從源頭就不會產生會被攔截的指令，終端機可以自動執行，不必每個指令都確認 |
+| Non-Workspace File Access（工作區外的檔案存取） | Always Ask 或 OFF | 避免 AI 讀寫工作區以外的資料夾 |
+
 ## 修改規則
 
-1. 編輯倉庫裡的 `global_rules.md`（不要直接改安裝後的檔案，下次安裝會被覆蓋）。
+1. 編輯倉庫裡的 `global_rules.md`，或只給某一台的 `machine_rules\<電腦代號>.md`（不要直接改安裝後的檔案，下次安裝會被覆蓋）。
 2. 重新執行安裝腳本。
 3. 提交並推送到 GitHub；公司開發機拉取後再推送到 `.bundle` 給管制機。各台拉取後再執行一次安裝腳本。
 

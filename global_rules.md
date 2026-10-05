@@ -20,6 +20,7 @@
 
 - 住家開發機與公司開發機合稱「開發機」，兩台都連不到公司內網。
 - 安裝後的規則檔最後一行 `THIS MACHINE:` 標示這台電腦的身分（home / dev / controlled），以此判斷目前在哪一台；沒有標示時先詢問使用者。
+- 只適用於某一台的規則放在 `machine_rules/<電腦代號>.md`，安裝時只附加到那一台（例如管制機的防毒與網路限制只出現在管制機）。開發機上的 AI 不受管制機專屬規則限制，但寫給管制機或同事電腦執行的程式仍要相容（見第 2、7 節）。
 - 管制機要用到表上沒列的外部網站或服務時，先請使用者在管制機實測能不能連，不要假設可以。
 - 每個專案的 `AGENTS.md` 要註明「目標執行環境」；沒有註明時先詢問使用者。
 
@@ -115,7 +116,7 @@ Google 雲端硬碟
 - 文字檔（.py、.json、.md、.html、.csv）一律 UTF-8；Python 開檔時明確指定 `encoding="utf-8"`。
 - `.bat`：CRLF 換行，開頭加 `cd /d "%~dp0"`，路徑變數一律加雙引號。預設只用 ASCII；確實需要中文時（例如既有的公司工具），存成 ANSI / Big5（CP950），不可存 UTF-8，並避開第二個位元組是 `\`、`|`、`^` 的字（例如「許、功、蓋」）。
 - `.vbs`：只用 ASCII。
-- `.ps1`：含中文時存成 UTF-8 with BOM（Windows PowerShell 5.1 才不會亂碼）；由 .bat 啟動時使用 `powershell -NoProfile -ExecutionPolicy Bypass -File`。
+- `.ps1`：含中文時存成 UTF-8 with BOM（Windows PowerShell 5.1 才不會亂碼）。要在管制機或同事電腦執行的 `.ps1` 只能用 PowerShell 5.1 語法（不可用 `?.`、`??`、`&&`／`||`、三元運算等 PowerShell 7 語法）。交給使用者雙擊的 `.bat` 啟動 `.ps1` 時，在 `.bat` 檔案內寫 `powershell -NoProfile -ExecutionPolicy Bypass -File`。
 - `.sh`：LF 換行，並具備執行權限。
 - 需要在 Linux 執行的專案：Windows 專屬指令（taskkill、netstat、start、cmd.exe 等）必須以 `sys.platform` 判斷分流，並同時提供 Linux 對應作法。
 

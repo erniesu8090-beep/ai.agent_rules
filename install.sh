@@ -25,7 +25,7 @@ esac
 
 src=$(mktemp)
 trap 'rm -f "$src"' EXIT
-{ cat global_rules.md; printf '\n---\nTHIS MACHINE: %s\n' "$machine"; } > "$src"
+{ cat global_rules.md; [ -f "machine_rules/$machine.md" ] && cat "machine_rules/$machine.md"; printf '\n---\nTHIS MACHINE: %s\n' "$machine"; } > "$src"
 
 install_to() {
     dir="$1"
