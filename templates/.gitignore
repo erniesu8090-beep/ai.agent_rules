@@ -17,6 +17,9 @@ __pycache__/
 *.log
 logs/
 
+# 開發暫存
+scratch/
+
 # 系統檔
 .DS_Store
 Thumbs.db
