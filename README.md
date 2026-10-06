@@ -16,7 +16,7 @@
 
 三台有 AI 工具的電腦都要安裝：住家開發機、公司開發機、管制機。
 
-1. 取得這個倉庫，放在 `D:\AI_Workspace\ai.agent_rules`：
+1. 取得這個倉庫，放在 `D:\AI_Workspace\ai.agent_rules`（Ubuntu 放在 `~/AI_Workspace/ai.agent_rules`）：
    - 住家開發機、公司開發機：從 GitHub `git clone`。
    - 管制機（連不到 GitHub）：用 GitSync 同步。先在公司開發機用 GitSync「管理專案 / .venv」→「可加入的資料夾」把本倉庫加入清單並推送到 `.bundle`；再到管制機下載 `.bundle`，用「從 .bundle 建立」取得本倉庫。
 2. Windows：雙擊 `install.bat`，依提示按 `1`、`2` 或 `3` 選擇這台是哪一台電腦。

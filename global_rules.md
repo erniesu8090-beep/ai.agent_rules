@@ -13,7 +13,7 @@
 
 | 代號 | 電腦 | AI 工具 | 安裝軟體 | 網路 | 用途 |
 |---|---|---|---|---|---|
-| 住家開發機（home） | 住家個人電腦 | Claude Code、Antigravity | 不限 | 外網、GitHub；不能連公司內網 | 個人專案；公司專案開發（經 GitHub 與公司開發機同步） |
+| 住家開發機（home） | 住家個人電腦（Windows 或 Ubuntu，可能不只一台） | Claude Code、Antigravity | 不限 | 外網、GitHub；不能連公司內網 | 個人專案；公司專案開發（經 GitHub 與公司開發機同步） |
 | 公司開發機（dev） | 公司個人電腦，Win11 | Claude Code、Antigravity | 不限 | 外網、GitHub；不能連公司內網 | 公司專案開發；GitHub 與管制機之間的中繼 |
 | 管制機（controlled） | 公司電腦，Win10 22H2 | Antigravity | **受限**：無管理員權限、有防毒軟體攔截 | **唯一能連公司內網的電腦**（內網伺服器、NAS）；外網有限制：不能連 GitHub，PyPI、python.org、CDN、Google 雲端硬碟網頁實測可連，其他網站未確認 | 公司專案接力開發、內網功能驗證、發布 |
 | 同事電腦 | 公司同事使用 | 無 | 受限，通常沒有 Python | 公司內網 | 只執行發布出去的成品 |
@@ -30,7 +30,7 @@
 版控流程（每一段都只傳已 commit 的內容）：
 
 ```
-住家開發機
+住家開發機（Windows／Ubuntu）
   ↕ GitHub（私人倉庫）
 公司開發機
   ↕ Google 雲端硬碟電腦版自動同步 .bundle
@@ -42,17 +42,17 @@ Google 雲端硬碟
 ```
 
 - 管制機連不到 GitHub，所以公司開發機與管制機之間用自製的 GitSync 工具（`D:\AI_Workspace\.Git`，內含免安裝 Git 與說明文件 `README.md`）把專案打包成 `.bundle` 傳遞。
+- 住家的 Ubuntu 開發機：工作區是 `~/AI_Workspace`，用 GitSync Ubuntu 版（`~/AI_Workspace/gitsync_ubuntu`，啟動 `./GitSync.sh`）與 GitHub 同步；它只走 GitHub，沒有 `.bundle` 功能。
 - 住家開發機與管制機之間沒有直接通道：住家的修改要先推到 GitHub，由公司開發機拉取後再推送到 `.bundle`；反方向亦同。
 - 只同步 `main` 分支。交接前先 commit 並推送；開始修改前先拉取，避免兩邊歷史分岔。
-- 專案必須放在 `D:\AI_Workspace` 底下兩層內，各台電腦的相對位置才會一致；不同資料夾的專案不可同名（`.bundle` 以資料夾名稱命名）。
-- 請使用者操作版控時，優先指示 GitSync 視窗版（`GitSync_GUI.vbs`）的按鈕；手動 git 指令只當備案，管制機上的 git 是 `D:\AI_Workspace\.Git\PortableGit\cmd\git.exe`。
+- 專案必須放在 `D:\AI_Workspace`（Ubuntu 是 `~/AI_Workspace`）底下兩層內，各台電腦的相對位置才會一致；不同資料夾的專案不可同名（`.bundle` 以資料夾名稱命名）。
+- 請使用者操作版控時，優先指示 GitSync 視窗版（Windows `GitSync_GUI.vbs`、Ubuntu `GitSync.sh`）的按鈕；手動 git 指令只當備案，管制機上的 git 是 `D:\AI_Workspace\.Git\PortableGit\cmd\git.exe`。
 - `.venv`、`runtime\`、大型壓縮檔不進 Git，每台各自建立；`.venv` 用 GitSync 的「管理專案 / .venv」建立或更新。
-- 動到 GitSync 工具本身時，先讀 `D:\AI_Workspace\.Git\README.md`，修改後同步更新該說明。
+- 動到 GitSync 工具本身時，先讀該版本的 `README.md`（Windows 版 `D:\AI_Workspace\.Git\`、Ubuntu 版 `~/AI_Workspace/gitsync_ubuntu/`），修改後同步更新該說明。
 
 ### 管制機的限制
 - 只能安裝「僅限目前使用者、不需管理員權限」的軟體；出現管理員權限要求（UAC 視窗、盾牌圖示）就停下來，不要嘗試繞過。
 - Python 3.11.9 以「僅限目前使用者」安裝、未加入 PATH：建 venv 用 `py -3.11 -m venv .venv`，執行一律用 `.venv\Scripts\python.exe`。不要直接呼叫 `python`，在管制機上它會指到 Windows 內建的假捷徑。
-- 各台電腦的 Python 都維持 3.11 系列；`requirements.txt` 鎖定版本，避免各台裝到不同版本。
 - 主控台字碼頁是 950（Big5）：讀寫檔案一律明確指定 `encoding="utf-8"`；要給 Excel 開的 CSV 用 `utf-8-sig`；在 cmd 用 `type` 看 UTF-8 檔案會亂碼，請改用記事本開。
 
 ### 內網與發布
@@ -138,6 +138,7 @@ Google 雲端硬碟
 
 - 全域 Python 只保留直譯器本體與基礎工具（pip、setuptools），嚴禁在全域安裝任何第三方套件（包含 `pip install --user`）。
 - 每個專案使用獨立虛擬環境 `.venv`；執行、測試指令一律使用 `.venv` 內的 Python。
+- Python 版本：公司專案（`AGENTS.md` 的目標執行環境含管制機或同事電腦）在每台電腦都用 3.11 系列，`requirements.txt` 全部鎖定版本；Ubuntu 開發機沒有 3.11，用 `uv venv --python 3.11 --seed .venv` 建立，不動系統 Python。其他個人專案用該台電腦現有的 Python 3。
 - `requirements.txt` 完整列出所有第三方套件；有已知相容性問題的套件要鎖定版本並註明原因。
 - 個人專案的啟動腳本要自動處理：沒有 `.venv` 就建立、`requirements.txt` 有變動就重新安裝，然後啟動程式。公司專案的啟動器依第 2 節，不自動建立 `.venv`。
 
