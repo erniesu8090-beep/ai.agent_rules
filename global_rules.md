@@ -108,6 +108,7 @@ Google 雲端硬碟
 | `CLAUDE.md` | Claude Code | 內容只有一行 `@AGENTS.md`（讓 Claude Code 讀同一份規則） |
 | `README.md` | 人 | 用途、安裝、啟動與操作方式 |
 
+- 建立時從 ai.agent_rules 倉庫的 `templates/` 複製 `AGENTS.md`、`CLAUDE.md`、`.gitignore`，再依專案內容填寫；不要自訂其他格式。
 - 業務規則或驗證方式有變動時，同步更新 `AGENTS.md`。
 - 專案規則只寫在 `AGENTS.md`，不另建模組化規則資料夾（`.agents/rules/`、`.claude/rules/`）；只有規則多到需要「依檔案類型分開套用」時才拆。發現只有一個、且永遠套用（`always_on`）的規則檔時，建議併入 `AGENTS.md` 後刪除。
 - 工作區規則檔只在「好幾個專案共用、但不適合放全域」（例如公司內部資訊）時才建立；全域規則已涵蓋的內容不要重複寫。
