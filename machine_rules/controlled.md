@@ -13,7 +13,7 @@
 - **終端機指令不可出現 `-ExecutionPolicy Bypass`、`-ep bypass`** 等繞過執行原則的參數。
 - **不從終端機執行內含 Bypass 的啟動器或工具**（例如專案的 `Launcher.bat`、GitSync 的 `GitSync_GUI.bat`）；需要測試時，請使用者自己雙擊執行，再回報結果或截圖。
 - 臨時、一次性要執行的腳本：用程式碼區塊交給使用者，由使用者用記事本存檔後自己執行（使用者在檔案總管雙擊不會被攔截）。
-- 可以直接執行：`git`（`D:\AI_Workspace\.Git\PortableGit\cmd\git.exe`）、`py -3.11`、`.venv\Scripts\python.exe`，以及只讀取資訊的診斷指令（例如 `Get-Process`、`Test-NetConnection`、`curl.exe -I`、`Resolve-DnsName`、`Get-ChildItem`）。
+- 可以直接執行：`git`（`D:\AI_Workspace\bundle.gitsync\PortableGit\cmd\git.exe`）、`py -3.11`、`.venv\Scripts\python.exe`，以及只讀取資訊的診斷指令（例如 `Get-Process`、`Test-NetConnection`、`curl.exe -I`、`Resolve-DnsName`、`Get-ChildItem`）。
 - 指令被防毒攔截時：停下來，把防毒的訊息告訴使用者，不要換一種寫法重試。
 
 ## B. 終端機與語法

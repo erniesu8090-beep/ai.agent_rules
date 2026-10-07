@@ -41,14 +41,14 @@ Google 雲端硬碟
 公司內網伺服器（網站、NAS）
 ```
 
-- 管制機連不到 GitHub，所以公司開發機與管制機之間用自製的 GitSync 工具（`D:\AI_Workspace\.Git`，內含免安裝 Git 與說明文件 `README.md`）把專案打包成 `.bundle` 傳遞。
+- 管制機連不到 GitHub，所以公司開發機與管制機之間用自製的 GitSync 工具（`D:\AI_Workspace\bundle.gitsync`，GitHub 倉庫 `bundle.gitsync_windows`，內含免安裝 Git 與說明文件 `README.md`）把專案打包成 `.bundle` 傳遞。
 - 住家的 Ubuntu 開發機：工作區是 `~/AI_Workspace`，用 GitSync Ubuntu 版（`~/AI_Workspace/gitsync_ubuntu`，啟動 `./GitSync.sh`）與 GitHub 同步；它只走 GitHub，沒有 `.bundle` 功能。
 - 住家開發機與管制機之間沒有直接通道：住家的修改要先推到 GitHub，由公司開發機拉取後再推送到 `.bundle`；反方向亦同。
 - 只同步 `main` 分支。交接前先 commit 並推送；開始修改前先拉取，避免兩邊歷史分岔。
 - 專案必須放在 `D:\AI_Workspace`（Ubuntu 是 `~/AI_Workspace`）底下兩層內，各台電腦的相對位置才會一致；不同資料夾的專案不可同名（`.bundle` 以資料夾名稱命名）。
-- 請使用者操作版控時，優先指示 GitSync 視窗版（Windows `GitSync_GUI.vbs`、Ubuntu `GitSync.sh`）的按鈕；手動 git 指令只當備案，管制機上的 git 是 `D:\AI_Workspace\.Git\PortableGit\cmd\git.exe`。
+- 請使用者操作版控時，優先指示 GitSync 視窗版（Windows `GitSync_GUI.vbs`、Ubuntu `GitSync.sh`）的按鈕；手動 git 指令只當備案，管制機上的 git 是 `D:\AI_Workspace\bundle.gitsync\PortableGit\cmd\git.exe`。
 - `.venv`、`runtime\`、大型壓縮檔不進 Git，每台各自建立；`.venv` 用 GitSync 的「管理專案 / .venv」建立或更新。
-- 動到 GitSync 工具本身時，先讀該版本的 `README.md`（Windows 版 `D:\AI_Workspace\.Git\`、Ubuntu 版 `~/AI_Workspace/gitsync_ubuntu/`），修改後同步更新該說明。
+- 動到 GitSync 工具本身時，先讀該版本的 `README.md`（Windows 版 `D:\AI_Workspace\bundle.gitsync\`、Ubuntu 版 `~/AI_Workspace/gitsync_ubuntu/`），修改後同步更新該說明。
 
 ### 管制機的限制
 - 只能安裝「僅限目前使用者、不需管理員權限」的軟體；出現管理員權限要求（UAC 視窗、盾牌圖示）就停下來，不要嘗試繞過。
