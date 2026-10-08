@@ -10,7 +10,7 @@
 | `AGENTS.md`、`CLAUDE.md` | 維護本倉庫時給 AI 看的專案規則 |
 | `install.bat` | Windows 安裝：雙擊執行 |
 | `install.sh` | Linux / macOS 安裝 |
-| `templates/` | 新專案範本：`AGENTS.md`、`CLAUDE.md`、`.gitignore` |
+| `templates/` | 新專案範本：`AGENTS.md`、`CLAUDE.md`、`PROGRESS.md`、`.gitignore` |
 
 ## 安裝
 
@@ -69,7 +69,7 @@
 | 工作區 | 例如 `D:\AI_Workspace` 底下的規則檔 | 公司內部才有的資訊：內網磁碟對應、同步工具位置、專案清單 |
 | 專案 | 各專案根目錄 `AGENTS.md` | 該專案特有：目標執行環境、業務規則、不可更動的部分、驗證方式 |
 
-越下層越優先。新專案可直接複製 `templates/` 裡的三個檔案開始。
+越下層越優先。新專案可直接複製 `templates/` 裡的檔案開始；需要跨對話、跨電腦接力的專案（公司專案一律需要）再加上 `PROGRESS.md`，記錄進度與交接。
 
 ### 什麼時候需要工作區層
 
