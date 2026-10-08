@@ -7,10 +7,10 @@
 | 檔案 | 用途 |
 |---|---|
 | `global_rules.md` | 全域規則本體（要改規則就改這個檔） |
-| `AGENTS.md`、`CLAUDE.md` | 維護本倉庫時給 AI 看的專案規則 |
+| `AGENTS.md` | 維護本倉庫時給 AI 看的專案規則 |
 | `install.bat` | Windows 安裝：雙擊執行 |
 | `install.sh` | Linux / macOS 安裝 |
-| `templates/` | 新專案範本：`AGENTS.md`、`CLAUDE.md`、`PROGRESS.md`、`.gitignore` |
+| `templates/` | 新專案範本：`AGENTS.md`、`PROGRESS.md`、`.gitignore` |
 
 ## 安裝
 
@@ -66,7 +66,7 @@
 | 層級 | 位置 | 寫什麼 |
 |---|---|---|
 | 全域 | 本倉庫 `global_rules.md` | 所有電腦、所有專案通用：電腦環境、雙機接力開發、語言、.venv、編碼、機密 |
-| 工作區 | 例如 `D:\AI_Workspace` 底下的規則檔 | 公司內部才有的資訊：內網磁碟對應、同步工具位置、專案清單 |
+| 工作區 | `D:\AI_Workspace\AGENTS.md` | 公司內部才有的資訊：內網磁碟對應、同步工具位置、專案清單 |
 | 專案 | 各專案根目錄 `AGENTS.md` | 該專案特有：目標執行環境、業務規則、不可更動的部分、驗證方式 |
 
 越下層越優先。新專案可直接複製 `templates/` 裡的檔案開始；需要跨對話、跨電腦接力的專案（公司專案一律需要）再加上 `PROGRESS.md`，記錄進度與交接。
@@ -87,19 +87,15 @@
 | | Claude Code | Antigravity |
 |---|---|---|
 | 全域 | `~/.claude/CLAUDE.md` | `~/.gemini/GEMINI.md` |
-| 專案 | `CLAUDE.md`（**不會**自動讀 `AGENTS.md`） | `AGENTS.md`（原生支援）、`GEMINI.md` |
-| 子資料夾 | 子資料夾的 `CLAUDE.md`（處理該資料夾的檔案時才讀） | 往上層資料夾搜尋 `AGENTS.md`／`GEMINI.md` |
+| 專案、工作區 | `AGENTS.md`（v2.1.277 起直接讀；目前資料夾與所有上層資料夾的都讀） | `AGENTS.md`（原生支援）、`GEMINI.md` |
+| 子資料夾 | 子資料夾的 `AGENTS.md`（處理該資料夾的檔案時才讀） | 往上層資料夾搜尋 `AGENTS.md`／`GEMINI.md` |
 | 模組化規則 | `.claude/rules/*.md`（可在檔頭指定只套用到哪些檔案）；全域 `~/.claude/rules/` | `.agents/rules/*.md`（或 `.agent/rules/`） |
-| 引用其他檔 | 在 `CLAUDE.md` 寫 `@檔案路徑` | — |
+| 引用其他檔 | 在 `AGENTS.md` 寫 `@檔案路徑` | — |
 
-- **只維護一份**：專案規則全部寫在 `AGENTS.md`；`CLAUDE.md` 只放一行 `@AGENTS.md` 當轉接頭（Claude Code 認的檔名是 `CLAUDE.md`）。專案內不需要 `GEMINI.md`。
-- **只給某個工具的內容**：Claude 專用的寫在 `CLAUDE.md` 的 `@AGENTS.md` 下一行；Antigravity 專用的放 `GEMINI.md`。一般情況不需要。
-- **模組化資料夾兩家不通用**：Claude Code 不讀 `.agents/rules/`，Antigravity 不讀 `.claude/rules/`。規則要拆檔又要共用時，放在 `.agents/rules/`，再在 `CLAUDE.md` 逐一引用：
-  ```
-  @AGENTS.md
-  @.agents/rules/gui.md
-  ```
-  規則不多時維持單一 `AGENTS.md` 即可。
+- **只維護一份**：規則全部寫在 `AGENTS.md`，兩個工具都讀得到。專案與工作區都**不要放 `CLAUDE.md`**（也不需要 `GEMINI.md`）。
+- **為什麼不能有 `CLAUDE.md`**：Claude Code 只要在目前資料夾或上層找到 `CLAUDE.md`、`.claude/CLAUDE.md` 或 `CLAUDE.local.md`，就只讀這些檔，所有 `AGENTS.md`（包含工作區那份）都會被跳過，畫面上不會提示。`/init` 會自動產生 `CLAUDE.md`，不要使用。使用者資料夾的 `~/.claude/CLAUDE.md` 不受影響。
+- **確認有讀到**：在專案裡執行 `/memory`，清單應同時列出工作區與專案的 `AGENTS.md`。如果沒有，檢查路徑上有沒有多出 `CLAUDE.md`，或 `/config` 的「Project instructions」是否被改掉（預設 `claude-md-or-agents-md`）。
+- **模組化資料夾兩家不通用**：Claude Code 不讀 `.agents/rules/`，Antigravity 不讀 `.claude/rules/`。規則要拆檔又要共用時，放在 `.agents/rules/`，再在 `AGENTS.md` 用 `@.agents/rules/gui.md` 引用（Claude Code 會展開引用；Antigravity 本來就讀 `.agents/rules/`）。規則不多時維持單一 `AGENTS.md` 即可。
 
 ### 什麼時候適合模組化規則
 
@@ -119,7 +115,7 @@
 | 規則很多（例如幾百行），而且明顯分成互不相干的幾類：前端、後端、部署腳本各有一大套規範 | 規則不多，一份檔案就讀得完（個人專案、一般公司小工具幾乎都屬於這種） |
 | 某些規則只跟特定檔案有關，例如只在改 `.bat` 時才需要的編碼規範 | 只拆出一個檔、又設成 `always_on` → 沒有任何好處，反而要維護兩份 |
 
-原則：**預設只用 `AGENTS.md`**，等到 `AGENTS.md` 長到難以維護、而且內容能依檔案類型切開時再拆。拆的時候照上一節的方式放在 `.agents/rules/`，並在 `CLAUDE.md` 逐一引用，讓兩個工具都讀得到。
+原則：**預設只用 `AGENTS.md`**，等到 `AGENTS.md` 長到難以維護、而且內容能依檔案類型切開時再拆。拆的時候照上一節的方式放在 `.agents/rules/`，並在 `AGENTS.md` 逐一引用，讓兩個工具都讀得到。
 
 > 以上依 2026-10 時兩邊工具的說明整理，細節（例如 `.claude/rules/` 指定檔案範圍的寫法）以官方文件為準。
 

@@ -8,7 +8,7 @@
 **規劃階段／開發中／測試中**（擇一）。已完成：
 
 1. 例：盤點參考資料，結果在 `doc/00_參考文件清單.md`
-2. 例：建立 Git 倉庫、AGENTS.md、CLAUDE.md、README.md、本檔
+2. 例：建立 Git 倉庫、AGENTS.md、README.md、本檔
 
 ## 二、使用者已確認的事
 

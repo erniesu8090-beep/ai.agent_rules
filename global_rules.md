@@ -2,7 +2,7 @@
 
 > 安裝位置：Claude Code → `~/.claude/CLAUDE.md`；Antigravity → `~/.gemini/GEMINI.md`
 > 規則本體在 ai.agent_rules 倉庫的 `global_rules.md`，要修改請改倉庫再重新執行安裝腳本，不要直接改安裝後的檔案。
-> 優先順序：專案根目錄 `AGENTS.md` > 工作區規則檔 > 本全域規則。
+> 優先順序：專案根目錄 `AGENTS.md` > 工作區 `AGENTS.md`（例：`D:\AI_Workspace\AGENTS.md`）> 本全域規則。
 
 ## 0. 關於使用者
 
@@ -100,17 +100,24 @@ Google 雲端硬碟
 
 ## 5. 專案文件與命名
 
-專案根目錄必須有以下三個檔案；建立新專案時一併建立，舊專案缺少時提醒使用者補上：
+專案根目錄要有以下檔案；建立新專案時一併建立，舊專案缺少時提醒使用者補上：
 
 | 檔案 | 對象 | 內容 |
 |---|---|---|
-| `AGENTS.md` | AI | 目標執行環境、業務規則、不可更動的部分、修改後的驗證方式 |
-| `CLAUDE.md` | Claude Code | 內容只有一行 `@AGENTS.md`（讓 Claude Code 讀同一份規則） |
+| `AGENTS.md` | AI（Claude Code、Antigravity 都會讀） | 目標執行環境、業務規則、不可更動的部分、修改後的驗證方式 |
 | `README.md` | 人 | 用途、安裝、啟動與操作方式 |
 | `PROGRESS.md` | AI 與人 | 進度與交接（會跨對話、跨電腦接力的專案才需要；公司專案一律要有） |
 
-- 建立時從 ai.agent_rules 倉庫的 `templates/` 複製 `AGENTS.md`、`CLAUDE.md`、`.gitignore`，再依專案內容填寫；不要自訂其他格式。
+- 建立時從 ai.agent_rules 倉庫的 `templates/` 複製 `AGENTS.md`、`PROGRESS.md`、`.gitignore`，再依專案內容填寫；不要自訂其他格式。
 - 業務規則或驗證方式有變動時，同步更新 `AGENTS.md`。
+- 專案規則只寫在 `AGENTS.md`，不另建模組化規則資料夾（`.agents/rules/`、`.claude/rules/`）；只有規則多到需要「依檔案類型分開套用」時才拆。發現只有一個、且永遠套用（`always_on`）的規則檔時，建議併入 `AGENTS.md` 後刪除。
+- 工作區規則檔只在「好幾個專案共用、但不適合放全域」（例如公司內部資訊）時才建立，檔名用 `AGENTS.md`（例：`D:\AI_Workspace\AGENTS.md`）；全域規則已涵蓋的內容不要重複寫。
+
+### 不要建立 `CLAUDE.md`
+- Claude Code 會直接讀目前資料夾與所有上層資料夾的 `AGENTS.md`（工作區與專案兩層都讀），但**只要路徑上有任何一個 `CLAUDE.md`、`.claude/CLAUDE.md` 或 `CLAUDE.local.md`，就改成只讀這些檔，所有 `AGENTS.md` 都被跳過，而且不會有提示**。
+- 所以專案與工作區都不建立上述三種檔案；不要用 `/init`（它會產生 `CLAUDE.md`）。使用者資料夾的 `~/.claude/CLAUDE.md`（本全域規則）不受影響。
+- 發現路徑上有這些檔案時，提醒使用者：把內容併入 `AGENTS.md` 後刪除。
+- 確認方法：在專案裡執行 `/memory`，清單應同時列出工作區與專案的 `AGENTS.md`。
 
 ### 進度交接檔 `PROGRESS.md`
 - 有 `PROGRESS.md` 的專案，`AGENTS.md` 開頭要寫「接手工作前先讀 `PROGRESS.md`」；新對話開始時依序讀 `AGENTS.md` → `PROGRESS.md`，再動手。
@@ -119,8 +126,8 @@ Google 雲端硬碟
 - 每次工作告一段落、或使用者說要換電腦時更新：開頭「最後更新：日期（電腦）」，電腦依 `THIS MACHINE` 判斷；修訂紀錄加一列「日期｜電腦｜內容」。
 - 更新後跟著同一次 commit 一起提交；沒有 commit 的話，另一台電腦拿不到最新進度。
 - 只寫結論與出處，不貼大段原文或對話紀錄；機密規則同第 8 節。
-- 專案規則只寫在 `AGENTS.md`，不另建模組化規則資料夾（`.agents/rules/`、`.claude/rules/`）；只有規則多到需要「依檔案類型分開套用」時才拆。發現只有一個、且永遠套用（`always_on`）的規則檔時，建議併入 `AGENTS.md` 後刪除。
-- 工作區規則檔只在「好幾個專案共用、但不適合放全域」（例如公司內部資訊）時才建立；全域規則已涵蓋的內容不要重複寫。
+
+### 命名
 - 命名：專案根目錄用「點 + 底線」組合（例：`tw.stock_assistant`）；專案內部的檔案與資料夾只用底線。
 
 ### 專案內資料夾
