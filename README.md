@@ -11,6 +11,7 @@
 | `install.bat` | Windows 安裝：雙擊執行 |
 | `install.sh` | Linux / macOS 安裝 |
 | `templates/` | 新專案範本：`AGENTS.md`、`PROGRESS.md`、`.gitignore` |
+| `workspace_rules/` | 工作區規則（通用版，不含公司資訊），安裝時複製到有 `.workspace_rule` 標記的工作區資料夾 |
 
 ## 安裝
 
@@ -47,6 +48,17 @@
 - 住家開發機與公司開發機不會安裝這些限制，所以那兩台的 Claude Code / Antigravity 可以照常在終端機測試。
 - 專案裡的 `AGENTS.md` 三台共用，不寫各台電腦的限制。
 - 要給某一台加專屬規則時，新增 `machine_rules\home.md` 或 `machine_rules\dev.md` 即可，安裝腳本會自動附加。
+
+### 工作區規則（workspace_rules）
+
+| 檔案 | 內容 |
+|---|---|
+| `workspace_rules\company_workspace.md` | 公司業務工作區：跨專案規範共用時，列入工作區的 `跨專案規範審查.md` 給使用者審查 |
+
+- 啟用方式（每台電腦做一次）：在工作區資料夾（與本倉庫同一層，例如 `D:\AI_Workspace\<工作區>`）建立純文字檔 `.workspace_rule`，內容一行寫規則名稱（例：`company_workspace`）。
+- 安裝腳本會把 `workspace_rules\<名稱>.md` 複製成該資料夾的 `AGENTS.md`（先備份，內容相同略過）；沒有 `.workspace_rule` 的資料夾不會動。
+- 倉庫裡只放**通用內容**：不寫公司專案名稱、工作區資料夾名稱、內網資訊。專案清單由 AI 讀各專案的 `AGENTS.md` 判斷。
+- 工作區裡 AI 產生的檔案（例如 `跨專案規範審查.md`）不在任何 Git 倉庫，不會跨電腦同步。
 
 ### 管制機上的 Antigravity 設定建議
 

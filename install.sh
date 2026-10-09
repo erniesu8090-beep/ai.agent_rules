@@ -24,7 +24,8 @@ case "$machine" in
 esac
 
 src=$(mktemp)
-trap 'rm -f "$src"' EXIT
+tmp="$src"
+trap 'rm -f "$tmp"' EXIT
 { cat global_rules.md; [ -f "machine_rules/$machine.md" ] && cat "machine_rules/$machine.md"; printf '\n---\nTHIS MACHINE: %s\n' "$machine"; } > "$src"
 
 install_to() {
@@ -45,4 +46,13 @@ install_to() {
 
 install_to "$HOME/.claude" CLAUDE.md
 install_to "$HOME/.gemini" GEMINI.md
+
+# 工作區規則：本倉庫旁邊有 .workspace_rule 檔的資料夾，把 workspace_rules/<名稱>.md 複製成該資料夾的 AGENTS.md
+for wsdir in ../*/; do
+    [ -f "$wsdir.workspace_rule" ] || continue
+    name=$(head -n 1 "$wsdir.workspace_rule" | tr -d ' \r\n')
+    if [ ! -f "workspace_rules/$name.md" ]; then echo "[WARN] 找不到 workspace_rules/$name.md，略過 $wsdir"; continue; fi
+    src="workspace_rules/$name.md"
+    install_to "${wsdir%/}" AGENTS.md
+done
 echo "[DONE] 已安裝為 $machine，請重新啟動 Claude Code / Antigravity 以載入新規則"

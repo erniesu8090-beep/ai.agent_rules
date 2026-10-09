@@ -2,6 +2,7 @@
 rem Install global AI agent rules (ASCII only)
 rem   global_rules.md + machine_rules\<machine>.md + machine tag -> %USERPROFILE%\.claude\CLAUDE.md  (Claude Code)
 rem   global_rules.md + machine_rules\<machine>.md + machine tag -> %USERPROFILE%\.gemini\GEMINI.md  (Antigravity)
+rem Workspace rules: workspace_rules\<name>.md -> <workspace>\AGENTS.md for folders with .workspace_rule
 rem Existing files are backed up as *.YYYYMMDD_HHMMSS.bak before overwrite.
 rem Usage: install.bat [home|dev|controlled]   (no argument = ask)
 setlocal
@@ -42,6 +43,10 @@ call :install "%USERPROFILE%\.claude" "CLAUDE.md" || goto :fail
 call :install "%USERPROFILE%\.gemini" "GEMINI.md" || goto :fail
 del "%SRC%" >nul 2>&1
 
+rem Workspace rules: every folder next to this repo that has a .workspace_rule file
+rem gets workspace_rules\<name>.md copied as its AGENTS.md (name = first line of the file)
+for /d %%D in ("..\*") do if exist "%%~fD\.workspace_rule" call :install_ws "%%~fD" || goto :fail
+
 echo.
 echo [DONE] Installed as "%MACHINE%". Restart Claude Code / Antigravity to load the new rules.
 pause
@@ -61,6 +66,29 @@ if exist "%DST%" (
 )
 copy /y "%SRC%" "%DST%" >nul || exit /b 1
 echo [OK] %DST%
+exit /b 0
+
+:install_ws
+set "WSDIR=%~1"
+set "WSNAME="
+set /p WSNAME=<"%WSDIR%\.workspace_rule"
+for /f "tokens=1" %%n in ("%WSNAME%") do set "WSNAME=%%n"
+if not exist "workspace_rules\%WSNAME%.md" (
+    echo [WARN] workspace_rules\%WSNAME%.md not found, skip %WSDIR%
+    exit /b 0
+)
+set "WSSRC=workspace_rules\%WSNAME%.md"
+set "WSDST=%WSDIR%\AGENTS.md"
+if exist "%WSDST%" (
+    fc /b "%WSSRC%" "%WSDST%" >nul 2>&1 && (
+        echo [SKIP] %WSDST% is already up to date.
+        exit /b 0
+    )
+    copy /y "%WSDST%" "%WSDST%.%TS%.bak" >nul || exit /b 1
+    echo [BACKUP] %WSDST%.%TS%.bak
+)
+copy /y "%WSSRC%" "%WSDST%" >nul || exit /b 1
+echo [OK] %WSDST%
 exit /b 0
 
 :fail
