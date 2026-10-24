@@ -1,0 +1,32 @@
+# 機密設定
+.env
+.env.*
+!.env.example
+*.pfx
+*.cer
+*.key
+
+# 虛擬環境與快取
+.venv/
+venv/
+__pycache__/
+*.pyc
+.cache/
+
+# 日誌
+*.log
+logs/
+
+# 開發暫存
+scratch/
+
+# 備份（覆寫前的備份、逆向專案的原版備份）
+backup/
+*.bak
+
+# 系統檔
+.DS_Store
+Thumbs.db
+
+# 本機資料快取（依專案調整）
+# data/

@@ -1,0 +1,5 @@
+# 確保其他電腦 clone 下來的換行字元正確
+* text=auto
+*.bat text eol=crlf
+*.sh  text eol=lf
+*.md  text eol=lf

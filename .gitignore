@@ -1,0 +1,9 @@
+# 機密設定（全域規則第 8 節）
+.env
+.env.*
+!.env.example
+*.pfx
+
+# 備份
+*.bak
+*.log
