@@ -11,6 +11,7 @@
 2. 建立每月重新查證流程（README「coding agent 功能查證」）與規則依據對照（對照表第三節）
 3. 補強停損摘要與 `PROGRESS.md` 範本：新增「試過但無效的做法」一節（2026-10-19）
 4. 新增「商業軟體式專案資料夾收納」規則、擴大支援 OpenCode 與 Codex、新增 AI 生圖規範（優先 Codex `$imagegen`／`codex-imagegen-bridge`，其次 Gemini `gemini-3.1-flash-image` 或更高）（2026-10-24）
+5. 新增「互動式選項卡片提問規則」（`doc/interactive_question_rules.md`），強制提問時呼叫選擇題工具並寫明優缺點說明（2026-10-25）
 
 ## 二、使用者已確認的事
 
@@ -24,6 +25,7 @@
 - 專案資料夾收納採「商業軟體式（根目錄極簡化）」：根目錄只留啟動器（`.bat`、`.cmd`、`.vbs`、`.exe`、`.sh`）、說明書、AI 規則檔与頂層環境設定；程式碼、素材、設定、測試一律收進子資料夾（2026-10-24）
 - 全域規則擴大安裝至 Codex（`~/.codex/AGENTS.md`）與 OpenCode（`~/.config/opencode/AGENTS.md`），三台電腦皆有安裝（2026-10-24）
 - AI 生圖優先使用 Codex 內建 `$imagegen`（其他 agent 透過 `codex-imagegen-bridge` 呼叫 `codex exec`），其次使用 Antigravity 內建 `gemini-3.1-flash-image`（或更高），禁用第三方免費生圖或未授權付費 API（2026-10-24）
+- 提問時強制呼叫互動式選擇題工具（`ask_question`／`AskUserQuestion`／`question`／`request_user_input`），一次問齊且每個選項寫明「`方案名稱 — 白話做法、優缺點與影響`」；`global_rules.md` 開頭寫完整規則、第 4 節採簡短參照，技術文件收進 `doc/interactive_question_rules.md`（2026-10-25）
 
 ## 三、待使用者決定（下次討論從這裡開始）
 
@@ -61,3 +63,4 @@
 | 2026-10-19 | 住家開發機 | 第 5 節 PROGRESS 提交規則註明停損例外；停損條文註明接手者在同一台電腦 |
 | 2026-10-24 | 住家開發機 | 新增商業軟體式資料夾收納規則；擴大支援 Codex 與 OpenCode；新增 AI 生圖優先順序與 Codex CLI bridge 規則 |
 | 2026-10-25 | 住家開發機 | 安裝 `agy` CLI 1.4.7 並實測 `agy -p` 呼叫 `image-generator` 子代理；建立全域 `codex-imagegen-bridge` 與 `agy-imagegen-bridge` 技能並同步更新規則檔 |
+| 2026-10-25 | 住家開發機 | 新增互動式選項卡片提問規則（`doc/interactive_question_rules.md`），更新 `global_rules.md`、`doc/coding_agent_features.md` 與 `README.md` |

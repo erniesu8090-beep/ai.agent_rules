@@ -85,6 +85,7 @@ flowchart TB
 | `templates/AGENTS_reverse.md` | AI | 逆向分析專案範本（含「逆向分析規則」區塊） |
 | `templates/PROGRESS.md`、`templates/.gitignore` | AI 與人 | 進度交接檔、Git 排除清單範本 |
 | `doc/coding_agent_features.md` | AI 與人 | 各家 coding agent 功能對照表，附查證日期；設計規則的依據 |
+| `doc/interactive_question_rules.md` | AI 與人 | 互動式選項卡片提問規則：四家工具規格查證與 `global_rules.md` 提問規範設計說明 |
 | `doc/CS2680_agent_practices.md` | AI 與人 | Harvard CS2680 課程重點：寫規則的原則從這裡來 |
 | `install.bat`／`install.sh` | 人 | 安裝腳本（Windows／Linux、macOS） |
 | `AGENTS.md` | AI | 維護**本倉庫**時的規則（含修改後的驗證方式） |

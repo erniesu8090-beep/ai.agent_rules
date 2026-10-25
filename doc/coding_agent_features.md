@@ -50,6 +50,7 @@
 | Hooks | `settings.json`；`PreToolUse` 可阻擋 | 工作區 `.agents/hooks.json`、全域 `~/.gemini/config/hooks.json`；`PreToolUse` 可 `deny` | `config.toml`／`hooks.json`；另 `~/.codex/rules/*.rules` 可設指令 `prefix_rule` 放行或阻擋 | 透過 `.opencode/plugins/`（`@opencode-ai/plugin`）攔截 `tool.execute.before` 等事件 | 2026-10-24 |
 | 自動記憶 | `~/.claude/projects/<專案>/memory/` | — | `~/.codex/memories_*.sqlite` | 透過外掛（如 `claude-mem`） | 2026-10-24 |
 | 附加系統提示 | `--append-system-prompt` | — | `-c developer_instructions=...` | `opencode.json` 的 `instructions` | 2026-10-24 |
+| 互動式選擇題卡片工具 | `AskUserQuestion`（v2.0.21+；`options` 含獨立 `label` 與 `description` 欄位，支援 `multiSelect`） | `ask_question`（`options` 為單純字串陣列無獨立 `description` 欄位，支援 `is_multi_select`） | `request_user_input`（預設於 Plan mode 啟用；一般模式需設 `[features] default_mode_request_user_input = true`） | `question`（支援 `header`、單複選與自訂輸入；可在 `opencode.json` 設 `"permission": { "question": "allow" }`） | 2026-10-25 |
 
 ## 三、依賴本表的規則
 
@@ -63,6 +64,7 @@
 | 不建 `.agents/rules/`、`.claude/rules/`，只用 `AGENTS.md`（`global_rules.md` 第 5 節） | 模組化規則（四家格式不互通，唯有 `AGENTS.md` 四家原生支援） |
 | `global_rules.md` 200 行內（`AGENTS.md` 撰寫原則） | 容量限制（Antigravity 單檔 24KB、Codex 合計 32KB） |
 | 安裝位置（`install.bat`、`install.sh`、`global_rules.md` 開頭） | 全域規則（`~/.claude/CLAUDE.md`、`~/.gemini/GEMINI.md`、`~/.codex/AGENTS.md`、`~/.config/opencode/AGENTS.md`） |
+| 提問時強制呼叫互動式選擇題工具，且每個選項字串須寫明「`方案名稱 — 白話做法、優缺點與影響`」（`global_rules.md` 開頭與第 4 節、`doc/interactive_question_rules.md`） | 互動式選擇題卡片工具（Antigravity `ask_question` 的 `options` 僅為字串陣列，無獨立 `description` 欄位） |
 
 ## 四、新增 coding agent
 
