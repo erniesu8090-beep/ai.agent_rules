@@ -256,8 +256,32 @@ flowchart LR
         codex exec --skip-git-repo-check --sandbox workspace-write --cd $project $prompt
         ```
      3. 確認目標路徑的圖檔已產生且可讀取。
-2. **第二優先：Antigravity 內建 `gemini-3.1-flash-image`（或更高版本）**
-   - 當本機無法使用 Codex CLI bridge，或使用者指定使用 Gemini 生圖時，使用 Antigravity 內建的 `gemini-3.1-flash-image`（或更高版本）模型。
+2. **第二優先：Antigravity 內建 `gemini-3.1-flash-image`（或更高版本，免 API Key，走 Antigravity 登入額度）**
+   - 當本機無法使用 Codex CLI bridge，或使用者指定使用 Gemini 生圖時採用。
+   - 在 **Antigravity** 內：直接呼叫內建 `invoke_subagent(TypeName="image-generator", ...)` 子代理，再將產出的圖片複製或轉存至 `assets/generated/`。
+   - 在 **Claude Code、Codex、OpenCode** 內：透過 `agy-imagegen-bridge` 技能，由 PowerShell 呼叫本機 `agy -p`（2026-10-25 實測確認：讓 `agy -p` 單純呼叫 `image-generator` 子代理，圖片會自動存入 `%USERPROFILE%\.gemini\antigravity-cli\brain\<對話ID>\`，再由外層 PowerShell 取最新圖檔轉存至專案，完全不會卡在 `agy` 內部的終端機權限確認）：
+     ```powershell
+     $agyExe = if (Get-Command agy -ErrorAction SilentlyContinue) { "agy" } else { "$env:LOCALAPPDATA\agy\bin\agy.exe" }
+     $project = (Get-Location).Path
+     $target = Join-Path $project 'assets\generated\image-name.png'
+     New-Item -ItemType Directory -Force -Path (Split-Path -Parent $target) | Out-Null
+     $startTime = Get-Date
+     $prompt = 'Invoke the built-in image-generator subagent to generate: [描述畫面、風格、構圖與限制]. Do not run any shell commands; just wait for the subagent to finish and reply with the saved file path.'
+     & $agyExe -p $prompt
+     $genFile = Get-ChildItem "$env:USERPROFILE\.gemini\antigravity-cli\brain" -Recurse -File -Include *.jpg,*.jpeg,*.png |
+         Where-Object { $_.LastWriteTime -ge $startTime } |
+         Sort-Object LastWriteTime -Descending |
+         Select-Object -First 1
+     if (-not $genFile) { throw "Antigravity image-generator did not produce an image file." }
+     if ($target.EndsWith('.png') -and $genFile.Extension -match '^\.jpe?g$') {
+         Add-Type -AssemblyName System.Drawing
+         $img = [System.Drawing.Image]::FromFile($genFile.FullName)
+         $img.Save($target, [System.Drawing.Imaging.ImageFormat]::Png)
+         $img.Dispose()
+     } else {
+         Copy-Item -LiteralPath $genFile.FullName -Destination $target -Force
+     }
+     ```
 3. **禁止事項**：
    - 嚴禁使用 Pollinations 等第三方免費生圖網站、帶浮水印或降畫質的替代服務。
    - 未經使用者明確要求，不得切換至需要 `OPENAI_API_KEY` 的付費 CLI／API 模式。

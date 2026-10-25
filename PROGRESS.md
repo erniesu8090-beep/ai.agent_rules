@@ -1,6 +1,6 @@
 # PROGRESS　進度與交接
 
-> 最後更新：2026-10-24（住家開發機）
+> 最後更新：2026-10-25（住家開發機）
 > 新對話接手：先讀 `AGENTS.md` → 本檔 → `doc/coding_agent_features.md`
 
 ## 一、目前階段
@@ -60,3 +60,4 @@
 | 2026-10-19 | 住家開發機 | 「確認方法」改成 Claude Code 自行比對是否讀到 `AGENTS.md`；對照表、README 同步 |
 | 2026-10-19 | 住家開發機 | 第 5 節 PROGRESS 提交規則註明停損例外；停損條文註明接手者在同一台電腦 |
 | 2026-10-24 | 住家開發機 | 新增商業軟體式資料夾收納規則；擴大支援 Codex 與 OpenCode；新增 AI 生圖優先順序與 Codex CLI bridge 規則 |
+| 2026-10-25 | 住家開發機 | 安裝 `agy` CLI 1.4.7 並實測 `agy -p` 呼叫 `image-generator` 子代理；建立全域 `codex-imagegen-bridge` 與 `agy-imagegen-bridge` 技能並同步更新規則檔 |
