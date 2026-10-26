@@ -1,6 +1,6 @@
 # PROGRESS　進度與交接
 
-> 最後更新：2026-10-25（住家開發機）
+> 最後更新：2026-10-26（住家開發機）
 > 新對話接手：先讀 `AGENTS.md` → 本檔 → `doc/coding_agent_features.md`
 
 ## 一、目前階段
@@ -26,6 +26,7 @@
 - 全域規則擴大安裝至 Codex（`~/.codex/AGENTS.md`）與 OpenCode（`~/.config/opencode/AGENTS.md`），三台電腦皆有安裝（2026-10-24）
 - AI 生圖優先使用 Codex 內建 `$imagegen`（其他 agent 透過 `codex-imagegen-bridge` 呼叫 `codex exec`），其次使用 Antigravity 內建 `gemini-3.1-flash-image`（或更高），禁用第三方免費生圖或未授權付費 API（2026-10-24）
 - 提問時強制呼叫互動式選擇題工具（`ask_question`／`AskUserQuestion`／`question`／`request_user_input`），一次問齊且每個選項寫明「`方案名稱 — 白話做法、優缺點與影響`」；`global_rules.md` 開頭寫完整規則、第 4 節採簡短參照，技術文件收進 `doc/interactive_question_rules.md`（2026-10-25）
+- Gemini 生圖具嚴格 RPM 限制與短時間密集風控（容易觸發 429 凍結 5～15 分鐘），批次生圖首選 Codex；若以 Gemini 批次產圖腳本需強制間隔 15～20 秒與 60 秒退避機制，已納入全域規則與 README（2026-10-26）
 
 ## 三、待使用者決定（下次討論從這裡開始）
 
@@ -64,3 +65,4 @@
 | 2026-10-24 | 住家開發機 | 新增商業軟體式資料夾收納規則；擴大支援 Codex 與 OpenCode；新增 AI 生圖優先順序與 Codex CLI bridge 規則 |
 | 2026-10-25 | 住家開發機 | 安裝 `agy` CLI 1.4.7 並實測 `agy -p` 呼叫 `image-generator` 子代理；建立全域 `codex-imagegen-bridge` 與 `agy-imagegen-bridge` 技能並同步更新規則檔 |
 | 2026-10-25 | 住家開發機 | 新增互動式選項卡片提問規則（`doc/interactive_question_rules.md`），更新 `global_rules.md`、`doc/coding_agent_features.md` 與 `README.md` |
+| 2026-10-26 | 住家開發機 | 新增 Gemini 生圖頻率限制（RPM／429 冷卻）與防鎖自保機制說明至全域規則與 README |

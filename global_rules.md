@@ -133,7 +133,7 @@
 
 - 串接外部 API 前，先查專案內的 API 文件資料夾（例如 `docs/api`）；沒有時再查官方文件，並說明資料來源。
 - 呼叫有額度或次數限制的 API（例如券商行情）時，節制測試次數。
-- **AI 生圖限制（順序不可顛倒）**：需要生成點陣圖素材時，**第一優先**使用 Codex 內建 `$imagegen`（在 Codex 內直接呼叫，或在 Antigravity／Claude Code／OpenCode 透過 `codex-imagegen-bridge` 技能以 `codex exec` 連動 ChatGPT 登入額度）；**第二優先**使用 Antigravity 內建 `gemini-3.1-flash-image` 或更高版本（在 Antigravity 內直接呼叫 `image-generator` 子代理，或在其他工具透過 `agy-imagegen-bridge` 技能以 `agy -p` 連動 Antigravity 登入額度，詳見 README「AI 生圖規範」）。嚴禁使用 Pollinations 等第三方免費生圖網站、帶浮水印或降畫質服務，未經使用者明確同意亦不得呼叫需 `OPENAI_API_KEY` 的付費 API。
+- **AI 生圖限制（順序不可顛倒）**：需要生成點陣圖素材時，**第一優先**使用 Codex 內建 `$imagegen`（在 Codex 內直接呼叫，或在 Antigravity／Claude Code／OpenCode 透過 `codex-imagegen-bridge` 技能以 `codex exec` 連動 ChatGPT 登入額度）；**第二優先**使用 Antigravity 內建 `gemini-3.1-flash-image` 或更高版本（在 Antigravity 內直接呼叫 `image-generator` 子代理，或在其他工具透過 `agy-imagegen-bridge` 技能以 `agy -p` 連動 Antigravity 登入額度，詳見 README「AI 生圖規範」）。嚴禁使用 Pollinations 等第三方免費生圖網站、帶浮水印或降畫質服務，未經使用者明確同意亦不得呼叫需 `OPENAI_API_KEY` 的付費 API。**注意（Gemini 頻率限制與防鎖）**：Gemini 生圖對短時間密集呼叫有嚴格 RPM 上限與防濫用風控，連續快送極易觸發 HTTP 429 暫時封鎖（5～15 分鐘冷卻）；批次連續產圖務必優先走 Codex；若使用 Gemini 批量生成，腳本必須加入強制間隔冷卻（每張圖間隔 15～20 秒）與遇錯指數退避（暫停 60 秒），嚴禁無間隔迴圈狂刷。
 - 修改後依專案 `AGENTS.md` 的驗證方式自我檢查，至少確認語法正確、程式可以啟動；宣告完成前要實際執行驗證，並附上輸出。
 - 不可刪除、跳過或修改既有測試、放寬判定條件來讓測試通過。
 - 只改與任務相關的檔案；需要動到其他檔案時先說明理由。
