@@ -6,6 +6,7 @@ rem   global_rules.md + machine_rules\<machine>.md + machine tag -> %USERPROFILE
 rem   global_rules.md + machine_rules\<machine>.md + machine tag -> %USERPROFILE%\.config\opencode\AGENTS.md (OpenCode)
 rem Dev PCs (home/dev): also make Claude Code read both CLAUDE.md and AGENTS.md
 rem   (%USERPROFILE%\.claude\settings.json, only created if missing)
+rem OpenCode: global config %USERPROFILE%\.config\opencode\opencode.jsonc (only created if missing)
 rem Existing files are backed up as *.YYYYMMDD_HHMMSS.bak before overwrite.
 rem Usage: install.bat [home|dev|controlled]   (no argument = ask)
 setlocal
@@ -47,6 +48,7 @@ call :install "%USERPROFILE%\.gemini" "GEMINI.md" || goto :fail
 call :install "%USERPROFILE%\.codex" "AGENTS.md" || goto :fail
 call :install "%USERPROFILE%\.config\opencode" "AGENTS.md" || goto :fail
 if /i not "%MACHINE%"=="controlled" call :settings || goto :fail
+call :opencodecfg || goto :fail
 del "%SRC%" >nul 2>&1
 
 echo.
@@ -71,24 +73,61 @@ echo [OK] %DST%
 exit /b 0
 
 :settings
-rem Claude Code: read CLAUDE.md and AGENTS.md together
+rem Claude Code: read CLAUDE.md and AGENTS.md together, plus permissions.deny
 set "CFG=%USERPROFILE%\.claude\settings.json"
+where claude >nul 2>&1 && (
+    for /f "tokens=*" %%v in ('claude --version 2^>nul') do (
+        echo [INFO] Detected Claude Code CLI: %%v ^(v2.1.285+ recommended; older needs agents-md@builtin^)
+    )
+)
 if exist "%CFG%" (
-    findstr /c:"claude-md-and-agents-md" "%CFG%" >nul && (
-        echo [SKIP] %CFG% already reads AGENTS.md.
+    findstr /c:"\"agents-md@builtin\"" "%CFG%" >nul && findstr /c:"cc-plugin-agents-md@builtin" "%CFG%" >nul && findstr /c:"google.cloud_oauth.relay" "%CFG%" >nul && (
+        echo [SKIP] %CFG% already configured.
         exit /b 0
     )
-    echo [WARN] %CFG% exists. Add instructionFiles manually, see README.
+    echo [WARN] %CFG% exists. Add instructionFiles / permissions.deny manually, see README.
     exit /b 0
 )
 >"%CFG%" echo {
+>>"%CFG%" echo   "permissions": {
+>>"%CFG%" echo     "deny": [
+>>"%CFG%" echo       "Read(./**/google.cloud_oauth.relay/**)"
+>>"%CFG%" echo     ]
+>>"%CFG%" echo   },
 >>"%CFG%" echo   "pluginConfigs": {
+>>"%CFG%" echo     "agents-md@builtin": {
+>>"%CFG%" echo       "options": { "instructionFiles": "claude-md-and-agents-md" }
+>>"%CFG%" echo     },
 >>"%CFG%" echo     "cc-plugin-agents-md@builtin": {
 >>"%CFG%" echo       "options": { "instructionFiles": "claude-md-and-agents-md" }
 >>"%CFG%" echo     }
 >>"%CFG%" echo   }
 >>"%CFG%" echo }
 echo [OK] %CFG%
+exit /b 0
+
+:opencodecfg
+rem OpenCode: workspace rules above the project root + sensitive path block
+set "OCFG=%USERPROFILE%\.config\opencode\opencode.jsonc"
+if exist "%OCFG%" (
+    findstr /c:"AI_Workspace/AGENTS.md" "%OCFG%" >nul && findstr /c:"google.cloud_oauth.relay" "%OCFG%" >nul && findstr /c:"git push" "%OCFG%" >nul && (
+        echo [SKIP] %OCFG% already configured.
+        exit /b 0
+    )
+    echo [WARN] %OCFG% exists. Add instructions / permissions manually, see README.
+    exit /b 0
+)
+>"%OCFG%" echo {
+>>"%OCFG%" echo   "$schema": "https://opencode.ai/config.json",
+>>"%OCFG%" echo   "instructions": [
+>>"%OCFG%" echo     "D:/AI_Workspace/AGENTS.md"
+>>"%OCFG%" echo   ],
+>>"%OCFG%" echo   "permissions": [
+>>"%OCFG%" echo     { "action": "read", "resource": "*google.cloud_oauth.relay*", "effect": "deny" },
+>>"%OCFG%" echo     { "action": "shell", "resource": "git push *", "effect": "ask" }
+>>"%OCFG%" echo   ]
+>>"%OCFG%" echo }
+echo [OK] %OCFG%
 exit /b 0
 
 :fail

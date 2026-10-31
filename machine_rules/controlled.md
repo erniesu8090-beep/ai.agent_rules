@@ -19,6 +19,7 @@
 ## B. 安裝軟體與 Python
 
 - 只能安裝「僅限目前使用者、不需管理員權限」的軟體；出現管理員權限要求（UAC 視窗、盾牌圖示）就停下來，不要嘗試繞過。
+- AI 工具限制：管制機無法使用 Claude Code 與 Codex（包含 `codex-imagegen-bridge`），僅使用 Antigravity 與 OpenCode。
 - Python 3.11.9 以「僅限目前使用者」安裝、未加入 PATH：建 venv 用 `py -3.11 -m venv .venv`，執行一律用 `.venv\Scripts\python.exe`。不要直接呼叫 `python`，它會指到 Windows 內建的假捷徑。
 
 ## C. 終端機與語法
@@ -28,5 +29,14 @@
 
 ## D. 網路
 
-- 企業防火牆會阻擋 `*.gvt1.com`（例如 `edgedl.me.gvt1.com`，約 20 秒後連線逾時），Google 系列工具（Antigravity 等）的自動更新會卡住；`dl.google.com` 可以連。需要下載 Google 工具的安裝檔時，把網址中的 `edgedl.me.gvt1.com` 換成 `dl.google.com`。
-- 其他未列在全域規則第 1 節的外部網站，先請使用者實測能不能連，不要假設可以。
+- **內網**：唯一能連公司內網（內網伺服器、NAS）的電腦。
+- **外網可正常連線（實測可連）**：
+  - PyPI、python.org、一般 CDN
+  - Google 雲端硬碟網頁版、`dl.google.com`、`script.google.com`（GAS 中繼）、`www.googleapis.com`
+  - AI 模型與助理端點：`generativelanguage.googleapis.com`（Gemini 核心模型）、`cloudaicompanion.googleapis.com`（AI 程式助理端點）
+- **外網受限與無法連線**：
+  - **不能連 GitHub**：代碼同步一律由開發機透過 Google 雲端硬碟的 `.bundle` 帶過來。
+  - **無法連線至 `oauth2.googleapis.com`（2026-10-22 實測）**：
+    - **受影響工具**：Antigravity 無法刷新 OAuth Token 換取模型額度；GitSync 的「API 直連」模式無法換發 Google Drive Access Token（需切換為「手動」模式透過瀏覽器上傳/下載 `.bundle`）。
+  - **無法連線至 `*.gvt1.com`（逾時）**：例如 `edgedl.me.gvt1.com`，Google 系列工具（Antigravity 等）的自動更新會卡住。下載 Google 安裝檔時，手動把網址中的 `edgedl.me.gvt1.com` 換成 `dl.google.com` 即可。
+- **其他外部網站**：未確認的外部網站或服務，先請使用者在管制機實測能不能連，不要假設可以。

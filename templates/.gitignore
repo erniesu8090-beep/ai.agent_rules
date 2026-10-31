@@ -23,6 +23,7 @@ scratch/
 # 備份（覆寫前的備份、逆向專案的原版備份）
 backup/
 *.bak
+*.bak_*
 
 # 系統檔
 .DS_Store
