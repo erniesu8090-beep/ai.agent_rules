@@ -1,32 +1,48 @@
 #!/usr/bin/env sh
 # 安裝全域 AI Agent 規則（Linux / macOS）
-#   global_rules.md + 本機標示 -> ~/.claude/CLAUDE.md（Claude Code）
-#   global_rules.md + 本機標示 -> ~/.gemini/GEMINI.md（Antigravity）
+#   global_rules.md [+ machine_rules/personal.md + machine_rules/<machine>.md] + 本機標示
+#     -> ~/.claude/CLAUDE.md（Claude Code）
+#     -> ~/.gemini/GEMINI.md（Antigravity）
+#     -> ~/.codex/AGENTS.md（Codex）
+#     -> ~/.config/opencode/AGENTS.md（OpenCode）
+# 開發機／通用機（home／dev／general）另外設定 Claude Code 同時讀 CLAUDE.md 與 AGENTS.md（~/.claude/settings.json，不存在才建立）
+# OpenCode 全域設定 ~/.config/opencode/opencode.jsonc（不存在才建立）
 # 既有檔案會先備份成 *.YYYYMMDD_HHMMSS.bak
-# 用法：sh install.sh [home|dev|controlled]（不帶參數則詢問）
+# 用法：sh install.sh [home|dev|controlled|general]（不帶參數則詢問）
 set -e
 cd "$(dirname "$0")"
+if [ ! -f "global_rules.md" ]; then
+    echo "[ERROR] 找不到 global_rules.md"
+    exit 1
+fi
 ts=$(date +%Y%m%d_%H%M%S)
 
 machine="$1"
 if [ -z "$machine" ]; then
-    echo "這台是哪一台電腦？ [1] home 住家開發機  [2] dev 公司開發機  [3] controlled 管制機"
-    printf "請輸入 1、2 或 3："
+    echo "這台是哪一台電腦？ [1] home 住家開發機  [2] dev 公司開發機  [3] controlled 管制機  [4] general 通用／同事電腦"
+    printf "請輸入 1、2、3 或 4："
     read -r ans
     case "$ans" in
-        1) machine=home ;; 2) machine=dev ;; 3) machine=controlled ;;
-        *) echo "[ERROR] 請輸入 1、2 或 3"; exit 1 ;;
+        1) machine=home ;; 2) machine=dev ;; 3) machine=controlled ;; 4) machine=general ;;
+        *) echo "[ERROR] 請輸入 1、2、3 或 4"; exit 1 ;;
     esac
 fi
 case "$machine" in
-    home|dev|controlled) ;;
+    home|dev|controlled|general) ;;
     *) echo "[ERROR] 不認得的電腦代號：$machine"; exit 1 ;;
 esac
 
 src=$(mktemp)
 tmp="$src"
 trap 'rm -f "$tmp"' EXIT
-{ cat global_rules.md; [ -f "machine_rules/$machine.md" ] && cat "machine_rules/$machine.md"; printf '\n---\nTHIS MACHINE: %s\n' "$machine"; } > "$src"
+{
+    cat global_rules.md
+    if [ "$machine" != general ]; then
+        [ -f "machine_rules/personal.md" ] && { printf '\n'; cat "machine_rules/personal.md"; }
+        [ -f "machine_rules/$machine.md" ] && { printf '\n'; cat "machine_rules/$machine.md"; }
+    fi
+    printf '\n---\nTHIS MACHINE: %s\n' "$machine"
+} > "$src"
 
 install_to() {
     dir="$1"
@@ -46,13 +62,107 @@ install_to() {
 
 install_to "$HOME/.claude" CLAUDE.md
 install_to "$HOME/.gemini" GEMINI.md
+install_to "$HOME/.codex" AGENTS.md
+install_to "$HOME/.config/opencode" AGENTS.md
 
-# 工作區規則：本倉庫旁邊有 .workspace_rule 檔的資料夾，把 workspace_rules/<名稱>.md 複製成該資料夾的 AGENTS.md
-for wsdir in ../*/; do
-    [ -f "$wsdir.workspace_rule" ] || continue
-    name=$(head -n 1 "$wsdir.workspace_rule" | tr -d ' \r\n')
-    if [ ! -f "workspace_rules/$name.md" ]; then echo "[WARN] 找不到 workspace_rules/$name.md，略過 $wsdir"; continue; fi
-    src="workspace_rules/$name.md"
-    install_to "${wsdir%/}" AGENTS.md
-done
-echo "[DONE] 已安裝為 $machine，請重新啟動 Claude Code / Antigravity 以載入新規則"
+if [ "$machine" != controlled ]; then
+    if command -v claude >/dev/null 2>&1; then
+        cver=$(claude --version 2>/dev/null || true)
+        [ -n "$cver" ] && echo "[INFO] 偵測到 Claude Code CLI：$cver（建議 v2.1.285 以上；舊版外掛 ID 為 agents-md@builtin）"
+    fi
+    cfg="$HOME/.claude/settings.json"
+    if [ -f "$cfg" ]; then
+        if [ "$machine" = general ]; then
+            if grep -q '"agents-md@builtin"' "$cfg" && grep -q "cc-plugin-agents-md@builtin" "$cfg"; then
+                echo "[SKIP] $cfg 已設定完成"
+            else
+                echo "[WARN] $cfg 已存在，請照 README 手動加入 instructionFiles 設定"
+            fi
+        else
+            if grep -q '"agents-md@builtin"' "$cfg" && grep -q "cc-plugin-agents-md@builtin" "$cfg" && grep -q "google.cloud_oauth.relay" "$cfg"; then
+                echo "[SKIP] $cfg 已設定完成"
+            else
+                echo "[WARN] $cfg 已存在，請照 README 手動加入 instructionFiles 與 permissions.deny 設定"
+            fi
+        fi
+    else
+        if [ "$machine" = general ]; then
+            cat > "$cfg" <<'JSON'
+{
+  "pluginConfigs": {
+    "agents-md@builtin": {
+      "options": { "instructionFiles": "claude-md-and-agents-md" }
+    },
+    "cc-plugin-agents-md@builtin": {
+      "options": { "instructionFiles": "claude-md-and-agents-md" }
+    }
+  }
+}
+JSON
+        else
+            cat > "$cfg" <<'JSON'
+{
+  "permissions": {
+    "deny": [
+      "Read(./**/google.cloud_oauth.relay/**)"
+    ]
+  },
+  "pluginConfigs": {
+    "agents-md@builtin": {
+      "options": { "instructionFiles": "claude-md-and-agents-md" }
+    },
+    "cc-plugin-agents-md@builtin": {
+      "options": { "instructionFiles": "claude-md-and-agents-md" }
+    }
+  }
+}
+JSON
+        fi
+        echo "[OK] $cfg"
+    fi
+fi
+
+# OpenCode 全域設定：工作區規則（在家目錄外時不會自動載入）＋敏感路徑阻擋
+ocfg="$HOME/.config/opencode/opencode.jsonc"
+if [ -f "$ocfg" ]; then
+    if [ "$machine" = general ]; then
+        if grep -q "git push" "$ocfg"; then
+            echo "[SKIP] $ocfg 已設定完成"
+        else
+            echo "[WARN] $ocfg 已存在，請照 README 手動加入 permissions 設定"
+        fi
+    else
+        if grep -q "AI_Workspace/AGENTS.md" "$ocfg" && grep -q "google.cloud_oauth.relay" "$ocfg" && grep -q "git push" "$ocfg"; then
+            echo "[SKIP] $ocfg 已設定完成"
+        else
+            echo "[WARN] $ocfg 已存在，請照 README 手動加入 instructions 與 permissions 設定"
+        fi
+    fi
+else
+    if [ "$machine" = general ]; then
+        cat > "$ocfg" <<'JSON'
+{
+  "$schema": "https://opencode.ai/config.json",
+  "permissions": [
+    { "action": "shell", "resource": "git push *", "effect": "ask" }
+  ]
+}
+JSON
+    else
+        cat > "$ocfg" <<'JSON'
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": [
+    "~/AI_Workspace/AGENTS.md"
+  ],
+  "permissions": [
+    { "action": "read", "resource": "*google.cloud_oauth.relay*", "effect": "deny" },
+    { "action": "shell", "resource": "git push *", "effect": "ask" }
+  ]
+}
+JSON
+    fi
+    echo "[OK] $ocfg"
+fi
+
+echo "[DONE] 已安裝為 $machine，請重新啟動 Claude Code / Antigravity / Codex / OpenCode 以載入新規則"

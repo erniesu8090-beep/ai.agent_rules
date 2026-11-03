@@ -1,1 +1,11 @@
+# 機密設定（全域規則第 8 節）
+.env
+.env.*
+!.env.example
+*.pfx
+
+# 備份與待刪除（兩段式刪除）
 *.bak
+*.bak_*
+*.log
+_pending_delete/
