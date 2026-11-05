@@ -3,7 +3,7 @@
 > 整併自：原 CS2680_agent_practices、harness_improvement、llm_ai_agent_prompt_loop_meta_harness（2026-10-29）；原始版本已刪除，需要時查 Git 歷史。
 > 用途：給 coding agent 與人共用的「原理＋做法」總覽；規則怎麼寫、任務怎麼拆、成本怎麼省，先看這份。
 > 查證標示：**已查證（官方）**、**已查證（二手）**、**推測**、**查不到**。前沿名詞若只來自單一整理，會明確標示「未重新查證」。
-> 最後整理：2026-10-31
+> 最後整理：2026-11-04
 
 ---
 
@@ -170,12 +170,55 @@ flowchart TD
 | `.claude/skills/` | 各家各一份 | 路徑不同 |
 | Hook（`settings.json`） | 各家各一份 | 格式不同 |
 
-### 5-4 擴充機制分工
+### 5-4 擴充機制與工具手腳全景分工
 
-- **Skill**＝怎麼做一件事（知識與流程）；**MCP**＝連外部資料與動作；**Hook**＝固定時機自動執行或強制；**Plugin**＝打包分發前三者。
-- Skill 平常只載入 `description`（決定何時被叫用），內文執行時才載入（Progressive Disclosure）。
-- 有副作用的 skill 要讓使用者明確觸發。
-- 好的流程型 skill 包含：進入條件、必要動作、禁止動作、人工核准關卡、驗證要求、下一個 skill。
+LLM 本身是大腦，各大 Harness 提供的手腳與擴充元件分工如下：
+
+| 元件類型 | 載入機制 | Token 代價 | 本質與定位 | 最適合情境 |
+|---|---|---|---|---|
+| **Rules（規則）** | 每次對話**常駐載入** | 每輪重複計費（租金高） | 行為憲法、安全禁區、溝通風格（不增強能力，只約束行為） | 不可踩的紅線、專案業務底線、驗收標準（維持 200 行內） |
+| **CLI / Shell** | 原生工具調用 | 僅指令與輸出佔用 | 原生萬能雙手，透過終端敲字執行 OS 指令 | 日常編譯、跑測試、Git 操作、建環境（主力動手工具） |
+| **MCP** | 結構化 RPC 連線 | Tool Schema 佔少量，動態取資料 | 開放標準外接感應器與遙控器，提供嚴格型別 API 與資源 | 跨平台查詢特定系統（Figma 圖層、資料庫、GitHub API） |
+| **Skills** | **按需載入**（Progressive Disclosure） | 平常僅 1 行 `description`，觸發才載入 | 抽屜裡的專業 SOP 劇本與作業手冊 | 流程繁瑣（>5 步）、非每次需要、高度固定的標準化流程 |
+| **Plugins** | 套裝打包載入 | 依內部所含元件而定 | 外帶全家餐，一鍵打包 Rules + Skills + MCP + Hooks + 憑證 | 第三方服務開箱即用整合（如 Google Drive、Slack 插件） |
+| **Custom Agents** | 獨立 Context 會話 | 獨立計算，不污染主線 | 專職分身角色，具備預設人設、限制工具清單與模型分級 | 模型降級跑腿省錢（Flash/Lite）、固定特定專家角色 |
+
+#### 實務判斷：何時該開立 Skill 資料夾？
+- **專案平時以「Rules（常駐規則）＋ 原生 CLI（動手工具）」為核心**，能靠 CLI 腳本與 Prompt 完成的事不需特意建 Skill。
+- **`ai.agent_rules` 倉庫不需要建立專案內 `skills/`**：
+  - 本專案定位為「全域憲法與同步中樞」，若在專案內建 `.agents/skills` 僅在開啟本倉庫時生效，換專案便失效。
+  - 真正具備跨專案價值的通用 Skill，應由安裝腳本派發至全域技能目錄（如 `~/.gemini/config/skills/`、`~/.claude/skills/`、`~/.codex/skills/`、`~/.config/opencode/skills/`），倉庫內維持乾淨。
+- **何時才建 Skill**：
+  - 任務步驟長達 5～10 步以上、流程極其固定、且只有特定時機才需要執行（例如：專案結構大遷移、排程發票作業、打包發布至特定主機）。
+  - 有副作用的 Skill 必須由使用者明確觸發（或設人工核准關卡）。
+  - 好的流程型 Skill 結構：進入條件、必要動作、禁止動作、人工核准關卡、客觀驗證指令、下一步。
+
+#### 5-4-1 Skill 規範與 Vibe Coding「免記指令」語意自動路由
+- **業界開放標準（`agentskills.io`）**：各大 Harness（Antigravity、Claude Code、Codex、OpenCode）已全面收斂到同一結構：`skills/<skill_name>/SKILL.md`（必要，含 YAML frontmatter `name` 與 `description`），可選附帶 `resources/`（伴隨範本如 `.ipynb` 骨架）與 `scripts/`（輔助腳本）。
+- **破解「不記指令」的核心機制（Semantic Triggering）**：
+  - 每一輪對話啟動時，AI 上下文僅常駐各技能的清單索引（`name` ＋ `description`，每項約 30～50 Tokens）。
+  - **Vibe Coding 的 Description 黃金寫法**：不要寫抽象英文，直接將使用者口語常用的「白話特徵詞／情境」埋入 `description`（例如：*「當使用者提到 Colab、.ipynb、雲端 GPU（L4/A100）或打包下載時自動啟用」*）。
+  - **效果**：使用者維持純白話溝通，完全不需要記憶手動輸入 Slash Command（如 `/colab-notebook`），AI 語意命中後會自動在背景載入整篇完整手冊與範本照著做。
+- **跨機派發架構與「漸進式揭露（Progressive Disclosure）」零污染保證**：
+  - **集中維護、全域派發**：通用 Skill 集中於 rules 倉庫維護，由 `install.bat`／`install.sh` 一鍵派發至四大 Agent 的全域技能目錄（`~/.gemini/config/skills/`、`~/.claude/skills/`、`~/.codex/skills/`、`~/.config/opencode/skills/`），三機（home/dev/controlled）與各專案皆可全局享有。
+  - **零污染機制**：放全域**絕不會干擾不相干專案**。在不相干專案中，只有一行幾十 Token 的索引存在，幾千字長篇手冊留在硬碟不進 Context。
+  - **防過度工程（Over-engineering）防線**：即便放全域零干擾，若任務極度低頻（如數月才用一次 Colab），**維持在 `templates/` 靜態範本反而維護成本最低**。唯有在 3～4 個專案中反覆出現、每次都要重教 AI 的高重複繁瑣 SOP，才值得升格為全域 Skill。
+
+### 5-5 社群 Spec-Plan-Build 指令流 vs. 規則自動攔截流（架構演進）
+
+社群廣泛推崇的 **Spec-Plan-Build 循環**（`/spec` 規格訪談 → `/plan` 任務拆解 → `/build` 分步實作），本質與本倉庫的規則體系殊途同歸，但在執行機制上有代差升級：
+
+| 比較維度 | 社群手動指令流（`/spec`、`/plan`、`/build`） | 本倉庫規則自動攔截流（Harness 閉環） |
+|---|---|---|
+| **驅動機制** | **依賴人類自律手動敲指令**（人會忘記、會偷懶，常導致 AI 直接暴衝改碼） | **底層環境與全域憲法強制攔截**（3 檔以上大改自動觸發提問卡片） |
+| **規格定義** | 手動下指令叫 AI 訪問 | 開新專案強制以 `templates/SPEC.md` 為起點，劃定邊界與排除不做的事 |
+| **決策對齊** | 聊天視窗多輪問答 | 互動式選擇題卡片問齊「規劃方案＋影響檔案＋驗收指令＋子代理」 |
+| **進度持久** | 換對話容易失憶 | `PROGRESS.md` 狀態持久化（含已確認事項、試過但無效的做法、下一步） |
+| **驗收收尾** | 手動檢查、人肉挑錯 | 內建自我迴圈驗證（Loop Engineering，跑測試修到過為止） |
+
+**邊界核心結論**：
+- **大腦決策骨幹＝常駐 Rules**：規格定義（SPEC）、大改攔截（提問卡片）、狀態交接（PROGRESS）與迴圈驗證是不可妥協的防護網，**必須由 Rules 強制執行，不可降級為選配 Skill**。
+- **特定業務延伸＝選配 Skills**：脫離日常開發主線的特定龐大手冊（如 Colab 雲端算力封裝、Excalidraw 繪圖規範、資料庫無停機遷移），才是 Skill 的最佳戰場。
 
 ---
 
@@ -233,8 +276,13 @@ flowchart TD
 
 - **「第二雙眼睛」效應（消除自評盲區）**：同一個模型（Generator）審查自己的程式碼容易放水或有思維盲區；改由不同架構的模型（例如 Gemini 主對話寫碼 ＋ Claude 或 DeepSeek 子代理挑錯）擔任 Verifier，能顯著提升邊界條件、邏輯漏洞與邊界條件的檢出率。
 - **大廠封閉性 vs. Meta-Harness 破局**：
-  - 各大廠官方 Agent（Claude Code、Codex、Antigravity）受限於商業生態，原生子代理通常只允許調用自家模型或抽象等級，無法跨廠混搭（各家規格詳見 `docs/coding_agent_features_table.md` 2-2-1 節）。
-  - **破局實踐（Meta-Harness 派工）**：主對話停留在體驗最佳的 IDE / 官方 Harness（如 Antigravity），需要跨模型獨立審查時，直接透過背景終端調用開放式工具（如 OpenCode CLI）執行特定外部模型（如 `opencode run -m openrouter/deepseek/...`）。
+  - 各大廠官方 Agent（Claude Code、Codex、Antigravity）受限於商業生態，原生子代理（Custom Agents）通常只允許調用自家模型或抽象等級，無法跨廠混搭（各家規格詳見 `docs/coding_agent_features_table.md` 2-2-1 節）。
+  - **原生 Custom Agents 的官方設計初衷**：
+    1. **固定專職人設與防呆邊界**：預先封裝專業 Prompt（如資安審查、文件抽取）並鎖定工具白名單（如限制只能唯讀），免去每次開新對話都要重複輸入落落長的要求。
+    2. **模型分級調度（Model Tiering 降成本）**：讓最聰明昂貴的主力旗艦（Pro）專注於架構設計，繁瑣例行雜事（如跑 lint、掃描廢棄函式、檢查註解與錯字）指派給便宜極速的 `flash_lite` 或 `flash` 在後台跑。
+  - **為什麼原生 Custom Agents 無法取代外部異質子代理？**
+    - **雙胞胎效應（思維同質化盲區）**：同廠牌模型訓練資料集與偏見高度重疊，哥哥寫完考卷叫弟弟改，深層邏輯缺陷往往一起略過。
+    - **破局實踐（Meta-Harness 外部派工）**：主對話停留在體驗最佳的 IDE / 官方 Harness（如 Antigravity），需要跨模型獨立審查時，直接透過背景終端調用開放式工具（如 OpenCode CLI）執行特定外部模型（如 `opencode run --agent plan -m opencode/deepseek-v4.1-flash-free#high ...`），以完全不相干的思維視角進行嚴格挑錯，且零消耗主力模型 Token。
 - **上下文隔離（Context Isolation）的雙重效益**：
   1. **防止主上下文膨脹**：子代理在獨立程序開 session 閱讀專案大量檔案，中途雜訊不進入主對話，只回傳最終審查精華。
   2. **職責分離**：主代理專注於使用者意圖與架構推進，子代理專注於單點挑錯或特定演算法諮詢。
@@ -281,7 +329,7 @@ flowchart TD
 7. 不確定 API 是否存在時，查實際文件或原始碼。
 8. 刪除、覆寫、推送、對外連線前先詢問。
 9. 高風險變更（登入、金流、刪檔）完成後，另開對話只挑錯。
-10. 犯錯後只把「讀程式碼推斷不出來的坑」補進規則，先提案、經同意再寫。
+10. 犯錯後只把「讀程式碼推斷不出來的坑」補進規則，先提案、經同意於任務收尾時再寫。
 
 ---
 

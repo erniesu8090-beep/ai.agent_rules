@@ -43,7 +43,7 @@
 ## 不可更動的部分
 
 - 電腦代號 `home`、`dev`、`controlled`、`general`：規則內文與安裝腳本都依賴這四個代號。
-- 安裝目的地：`~/.claude/CLAUDE.md`、`~/.gemini/GEMINI.md`、`~/.codex/AGENTS.md`、`~/.config/opencode/AGENTS.md`；非管制機另外在 `~/.claude/settings.json` 不存在時建立（已存在只檢查、不改寫，避免弄壞使用者自己的設定）；所有電腦另外在 `~/.config/opencode/opencode.jsonc` 不存在時建立（規則同上）。
+- 安裝目的地：`~/.claude/CLAUDE.md`、`~/.gemini/GEMINI.md`、`~/.codex/AGENTS.md`、`~/.config/opencode/AGENTS.md`；全域技能自動派發至 `~/.claude/skills/`、`~/.gemini/config/skills/`、`~/.codex/skills/`、`~/.config/opencode/skills/`；非管制機另外在 `~/.claude/settings.json` 不存在時建立（已存在只檢查、不改寫，避免弄壞使用者自己的設定）；所有電腦另外在 `~/.config/opencode/opencode.jsonc` 不存在時建立（規則同上）。
 - 安裝前一定先備份既有檔案（`*.日期_時間.bak`），內容相同則略過。
 - `install.bat` 只用 ASCII、CRLF 換行；`install.sh` 用 LF 換行；換行由 `.gitattributes` 保證，不可刪除。
 
@@ -57,12 +57,13 @@
    ```powershell
    $t = "$env:TEMP\agentrules_test"; Remove-Item -Recurse -Force $t -ErrorAction SilentlyContinue; New-Item -ItemType Directory $t | Out-Null
    $env:USERPROFILE = $t
-   cmd /c "install.bat controlled < nul"   # 預期：4 行 [OK]（CLAUDE.md、GEMINI.md、.codex/AGENTS.md、.config/opencode/AGENTS.md）+ 1 行 opencode.jsonc [OK]
-   cmd /c "install.bat controlled < nul"   # 預期：5 行 [SKIP]
-   cmd /c "install.bat dev < nul"          # 預期：4 組 [BACKUP]+[OK] + settings.json [OK] + opencode.jsonc [SKIP]（前一次已建立）
-   cmd /c "install.bat dev < nul"          # 預期：6 行 [SKIP]
-   cmd /c "install.bat general < nul"      # 預期：4 組 [BACKUP]+[OK] + settings.json [SKIP] + opencode.jsonc [SKIP]
+   cmd /c "install.bat controlled < nul"   # 預期：4 行 rules [OK] + 1 行 opencode.jsonc [OK] + 4 行 skills [OK]
+   cmd /c "install.bat controlled < nul"   # 預期：5 行 rules/cfg [SKIP] + 4 行 skills [SKIP]
+   cmd /c "install.bat dev < nul"          # 預期：4 組 [BACKUP]+[OK] + settings.json [OK] + opencode.jsonc [SKIP] + 4 行 skills [SKIP]
+   cmd /c "install.bat dev < nul"          # 預期：6 行 rules/cfg [SKIP] + 4 行 skills [SKIP]
+   cmd /c "install.bat general < nul"      # 預期：4 組 [BACKUP]+[OK] + settings.json [SKIP] + opencode.jsonc [SKIP] + 4 行 skills [SKIP]
    Get-Content "$t\.claude\CLAUDE.md" -Tail 1          # 預期：THIS MACHINE: general
+   Get-Content "$t\.gemini\GEMINI.md" -Tail 1          # 預期：THIS MACHINE: general
    Get-Content "$t\.codex\AGENTS.md" -Tail 1           # 預期：THIS MACHINE: general
    Get-Content "$t\.config\opencode\AGENTS.md" -Tail 1 # 預期：THIS MACHINE: general
    Get-Content "$t\.config\opencode\opencode.jsonc"    # 預期：含 instructions 與 permissions

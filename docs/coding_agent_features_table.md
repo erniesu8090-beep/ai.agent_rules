@@ -3,7 +3,7 @@
 > 整併自：原 coding_agent_features.md、lightweight_llm_improvement.md、interactive_question_rules.md（2026-10-31 併入第五節）；原始版本已移至資源回收筒或可查 Git 歷史。
 > 範圍：只收**寫程式用的 coding agent**（Claude Code、Antigravity、Codex、OpenCode）；聊天介面（claude.ai、Gemini Apps、ChatGPT 網頁版）不在本表。
 > 用途：設計 `global_rules.md`、`templates/` 規則與安裝腳本的依據。**每一列都有查證日期**；最後一次全面查證超過 1 個月就要重新查。
-> 最後全面查證：2026-10-28（最後整併：2026-10-31）
+> 最後全面查證：2026-10-28（最後整併與增補：2026-11-04）
 > 標記：「—」查無對應功能；「⚠」只有第三方來源、本機實測或尚未查證。
 
 ---
@@ -30,7 +30,7 @@
 | 全域規則 | `~/.claude/CLAUDE.md`；組織 managed CLAUDE.md | `~/.gemini/AGENTS.md`、`~/.gemini/GEMINI.md`、`~/.gemini/config/AGENTS.md`、`~/.gemini/config/GEMINI.md`；模組化 `~/.gemini/config/rules/*.md`（需 frontmatter）；CLI 另讀 `~/.gemini/antigravity-cli/rules/*.md` | `~/.codex/AGENTS.override.md` 或 `~/.codex/AGENTS.md` | `~/.config/opencode/AGENTS.md`（系統層另讀 `/etc/opencode`、`%ProgramData%\opencode`） | 2026-10-28 |
 | 專案／目錄規則 | `CLAUDE.md`、`.claude/CLAUDE.md`、`CLAUDE.local.md`，目前資料夾與所有上層全部串接；子資料夾的檔案讀到該資料夾檔案時才載入 | 任一目錄的 `AGENTS.md`、`GEMINI.md`，或 `<dir>/.agents/` 底下；累加，衝突時較具體的目錄優先 | 從 Git／專案根目錄往下到目前資料夾，依序合併 `AGENTS.override.md` 或 `AGENTS.md` | 任一目錄的 `AGENTS.md`，由遠而近合併；子資料夾的檔案讀到該資料夾時才載入 | 2026-10-28 |
 | 讀 `AGENTS.md` | v2.1.277 起原生讀取，但路徑上有 `CLAUDE.md`／`.claude/CLAUDE.md`／`CLAUDE.local.md` 時**全部跳過、不提示**（`~/.claude/CLAUDE.md` 不算）。可在 `~/.claude/settings.json` 設 `instructionFiles: "claude-md-and-agents-md"` 改成兩者都讀（專案層無效；v2.1.285 前外掛 ID 為 `agents-md@builtin`，v2.1.285 起亦支援 `cc-plugin-agents-md@builtin`，或用 `/config`） | 原生常駐 | 原生常駐（預設不讀 `CLAUDE.md`，除非在 `config.toml` 設 `project_doc_fallback_filenames`） | **唯一格式**：只讀 `AGENTS.md`，不讀 `CLAUDE.md`（V2 官方明訂無 fallback） | 2026-10-28 |
-| AI 看得出載入哪些規則 | 是：每個規則檔附完整路徑（「Contents of <路徑>」），可自行比對；人工確認用 `/memory`（需 v2.1.280+ 才會列出直接讀入的 `AGENTS.md`） | ⚠ 未查證 | `/status` 可檢視目前載入設定 | ⚠ 未查證；查無 `/memory` 類指令，靠開新對話自行比對 | 2026-10-28 |
+| AI 看得出載入哪些規則 | 是：每個規則檔附完整路徑（「Contents of <路徑>」），可自行比對；人工確認用 `/memory`（需 v2.1.280+ 才會列出直接讀入的 `AGENTS.md`） | ⚠ 未查證 | `/status` 可檢視目前載入設定 | 開新對話自動載入；實體對話開頭直接反映規則與末尾 `THIS MACHINE`（2026-11-04 實測確認） | 2026-11-04 |
 | 往上找規則的範圍 | 一直到磁碟根目錄 | 只到工作區根目錄（workspace root，不會超過）；2026-10-10 實測開啟 Git 倉庫時只到該倉庫根目錄 | 只到 Git／專案根目錄 | 從工作區往上找到**家目錄**；工作區在家目錄以外時只到專案根目錄（`D:\AI_Workspace` 屬此類，要另用 `instructions` 指定） | 2026-10-28 |
 | 引用其他檔 | `@path`，展開嵌入，最多 4 層；程式碼區塊內不展開 | `@[label](path)` 展開嵌入；`@filename` 只轉成絕對路徑 | — | 不支援 `@` 展開；改用 `opencode.jsonc` 的 `instructions`（相對路徑、glob、`~/`、絕對路徑、HTTP(S)） | 2026-10-28 |
 | 模組化規則 | `.claude/rules/*.md`，遞迴掃描；frontmatter `paths` 限定檔案 | 工作區 `.agents/rules/*.md`、全域 `~/.gemini/config/rules/*.md`（CLI 為 `~/.gemini/antigravity-cli/rules/*.md`），只掃第一層；`trigger` 必填（`always_on`／`model_decision`／`glob`／`manual`），缺少或寫錯**靜默丟棄** | 子目錄放 `AGENTS.md`（註：`~/.codex/rules/*.rules` 是指令執行的白名單規則，不是文字規則） | 巢狀 `AGENTS.md`（按需載入）＋ `instructions` 陣列 | 2026-10-28 |
@@ -51,7 +51,10 @@
 #### 2-2-1 四大工具子代理（Subagent）跨模型調度與設定格式對照
 
 > 查證日期：2026-11-03（官方文件與實測）  
-> 重點結論：大廠官方工具（Claude Code、Codex、Antigravity）受限於商業生態，原生子代理**僅限自家模型體系或抽象等級**；**OpenCode 是唯一原生支援跨廠牌自由混搭（異質 Multi-Agent）的開放架構**。
+> 重點結論：
+> 1. **生態邊界**：大廠官方工具（Claude Code、Codex、Antigravity）受限於商業生態，原生子代理**僅限自家模型體系或抽象等級**；**OpenCode 是唯一原生支援跨廠牌自由混搭（異質 Multi-Agent）的開放架構**。
+> 2. **原生 Custom Agent 定位**：官方設計主要用於「固定專職人設免重複輸入、工具限制防呆（如唯讀）、以及透過自家模型等級（Flash/Lite/Haiku）分流降成本」。
+> 3. **外部 CLI 派工定位**：克服大廠同門模型「雙胞胎思維同質化盲區」，透過外部 CLI（如 OpenCode CLI）呼叫完全獨立的開源模型（如 DeepSeek）擔任客觀 Verifier 挑錯，且零消耗主力 Token。
 
 ##### ① 四大工具子代理支援度比較表
 
@@ -112,6 +115,29 @@
   以第二雙眼睛的視角審查當前變更，指出邏輯盲區與潛在異常。
   ```
 
+##### ③ 外部 CLI 派工實戰指南（OpenCode 子代理規範，2026-11-04 實測整理）
+
+當 Antigravity、Claude Code 或 Codex 主對話需要調用 OpenCode 擔任外部獨立子代理時，必須遵循以下工程防呆與派工準則：
+
+1. **Windows 背景調用防卡死與唯讀鎖定三要素**：
+   ```cmd
+   cmd /c "opencode run --agent plan -m <模型名稱> --auto \"<任務提示詞>\" < nul"
+   ```
+   - `cmd /c`：在 Windows 下確保命令解譯器正確處理引號與輸出導向。
+   - `--agent plan`（核心唯讀鎖定，2026-11-04 實測確認）：強制指定 OpenCode 內建的 Plan 規劃模式，從底層沒收檔案寫入與修改工具，保證子代理絕不變更專案檔案。
+   - `--auto`：自動確認所有非高危操作，避免 CLI 等待使用者互動確認而停滯。
+   - `< nul`（核心防卡死）：Windows 下非互動進程常因等待 stdin 結束符號（EOF）而陷入無窮等待；導向空輸入確保進程順暢退出。
+2. **子代理數量與動態工作池（Worker Pool：線上最多 3 個）**：
+   - **0 個（不派）**：單檔小修改、修小錯、前後步驟高度依賴的任務（留在主對話做，避免掉細節與浪費 token）。
+   - **1 個（預設）**：讀巨型檔案/Log、日常程式碼修改後的「客觀視角唯讀抓漏」。
+   - **多子代理（動態工作池）**：涉及金流、登入權限或架構大改的高風險任務，可派多個獨立視角分工審查（總任務數量不設死上限）；執行時採「**階梯式錯峰啟動（間隔 5～10 秒）＋ 線上並行上限 3 個（Worker Pool）**」，任一子代理完成後立即動態遞補下一個，兼顧防範 429 併發限速與最小化總等待時間。
+3. **OpenCode Free 限速與底層槽位限制**：
+   - OpenCode 內部 `ConcurrencyManager` 預設槽位為 5；且 Free 通道採動態共享池，嚴格遵守上述線上最多 3 個並行與錯峰啟動規範。
+4. **漸進式封裝（Progressive Disclosure）**：
+   - 具體 CLI 命令封裝於 `templates/skills/opencode-runner/SKILL.md`（預設帶入 `opencode/deepseek-v4.1-flash-free#high`），由安裝腳本自動派發至全域技能目錄；全域規則只保留觸發原則，將常駐 Prompt 消耗壓在 200 行以內。
+5. **受限環境（管制機）限制**：
+   - 管制機禁止調用需要連線 OpenRouter 等外部商業 API 的模型，僅可使用本機或核准通道。
+
 ### 2-3 強制執行與記憶
 
 | 功能 | Claude Code | Antigravity | Codex | OpenCode | 查證日 |
@@ -139,7 +165,9 @@
 | 安裝位置（`install.bat`、`install.sh`、`global_rules.md` 開頭） | 全域規則 |
 | 資安防凍結阻擋讀取敏感專案與啟動資料夾限制（`global_rules.md` 第 8 節、`install.bat`、`install.sh`、README、`docs/claude_code_permissions_deny.md`） | 拒絕讀取特定路徑 |
 | 免記指令全自動提問卡片：規劃／3 檔以上／跨檔案／單檔大改前強制呼叫選擇題卡片，整合「規劃方案＋自我迴圈驗證＋動態子代理」（`global_rules.md` 開頭與第 4、9 節、README、本表第五節） | 互動式選擇題卡片、子代理 |
-| 除錯後篩選重要陷阱與漏掉的測試，先提案確認再補進專案 `AGENTS.md`，維持 10 條／200 行（`global_rules.md` 第 9 節、本表第五節） | 自動記憶、容量限制 |
+| 安裝腳本自動將 `templates/skills/` 派發至四家工具全域技能目錄（`install.bat`、`install.sh`、`AGENTS.md`、README） | Skills |
+| 調用 OpenCode CLI 擔任外部子代理時依 `opencode-runner` Skill 強制加 `--agent plan` 唯讀鎖定、`--auto`、`< nul` 防卡死與動態工作池（`global_rules.md` 開頭與第 9 節、`templates/skills/opencode-runner/SKILL.md`、本表 2-2-1 節） | 規劃與訪談、子代理 |
+| 除錯後篩選重要陷阱與漏掉的測試，先提案確認再於任務收尾時補進專案 `AGENTS.md`（已知的坑放檔案最末尾維持快取命中），維持 10 條／200 行（`global_rules.md` 第 9 節、`templates/AGENTS*.md`、本表第五節） | 自動記憶、容量限制 |
 
 ---
 
@@ -164,11 +192,11 @@
 
 | 落差 | Claude Code（基準） | 其他 agent 常見表現 | 補強做法（免記指令，全靠提問卡片與規則） |
 |---|---|---|---|
-| 主動提問與規劃 | 動手前跳選擇題卡片，先給計畫等核准 | 直接改檔，或只在對話裡問一句 | 規則開頭強制點名工具（`ask_question`／`question`／`request_user_input`）：新規劃、修改 3 檔以上、跨檔案、單檔大改或有 2 種做法時，必跳卡片確認「① 規劃方案與影響檔案」 |
+| 主動提問與規劃 | 動手前跳選擇題卡片，先給計畫等核准 | 直接改檔，或只在對話裡問一句 | 規則開頭強制點名工具（`ask_question`／`AskUserQuestion`／`question`／`request_user_input`）：新規劃、修改 3 檔以上、跨檔案、單檔大改或有 2 種做法時，必跳卡片確認「① 規劃方案與影響檔案」 |
 | 選項品質 | 標題＋說明＋優缺點 | 只有簡短名詞，缺決策資訊 | 固定選項格式：首項標 `(Recommended)`，每項寫「方案 — 白話做法、優缺點」 |
 | 自我迴圈驗證 | 會主動跑測試並修到過 | 傾向「看起來完成」就交差 | 提問卡片必問「② 自我迴圈驗證方式」；任務開頭寫驗收標準，改完自動跑驗證修到過（最多兩次）並附輸出 |
 | 子代理調度 | 大任務適時分工或獨立審查 | 不主動派，或亂派小任務浪費額度 | AI 先判斷任務是否合適（大範圍搜尋、平行改獨立檔、改完唯讀挑錯），合適時在卡片動態加問「③ 是否派子代理」；不合適時不問 |
-| 記憶沉澱 | 被糾正時自動記下回饋 | 不會自動記；要人提醒 | 除錯後先提案，經同意才寫入專案 `AGENTS.md` |
+| 記憶沉澱 | 被糾正時自動記下回饋 | 不會自動記；要人提醒 | 除錯後先提案，經同意於任務收尾時寫入專案 `AGENTS.md`（已知的坑置於最末尾維持快取） |
 | 規則遵循 | 長規則也能抓到重點 | 規則一長就漏看（各家都會，見 `ai_agent_engineering.md` 第五節） | 規則 200 行內、提問卡片規則放最開頭 |
 
 ### 5-2 五個補強做法
@@ -179,7 +207,7 @@
 | 2. 卡片整合「規劃＋迴圈驗證＋動態子代理」 | 卡片必問「① 規劃與影響檔案」「② 自我迴圈驗證方式」；任務合適時動態加問「③ 是否派子代理分工／審查」 | 一張卡片同時對齊做什麼、怎麼驗收、要不要派子代理；不合適子代理時不多問，避免核准疲勞 | 幾行規則 |
 | 3. 固定選項格式 | 首項標 `(Recommended)`，每項寫「方案 — 白話做法、優缺點」 | 決策資訊不靠模型臨場發揮 | 幾行規則 |
 | 4. 自我迴圈驗證到底 | 開頭寫「怎樣算做完」，改完自動跑驗證、沒過自己修（最多 2 次） | 把「感覺完成」變成自動閉環檢查 | 一次設定 |
-| 5. 經驗沉澱先提案 | 只補讀程式碼推斷不出的坑，經同意才寫入 | 規則不會越長越失焦 | 每次一行 |
+| 5. 經驗沉澱先提案 | 只補讀程式碼推斷不出的坑，經同意於任務收尾時寫入 | 規則不會越長越失焦，且不破壞當下對話快取 | 每次一行 |
 
 > 核心原則：**把指令藏進提問卡片裡**。使用者只負責講需求與點選卡片，規劃、子代理派工與自我迴圈驗證都由 AI 在卡片中主動提出（各家內建指令僅留本表 2-2 節備查）。
 
@@ -240,7 +268,7 @@
       "question": "3. 是否使用子代理（本任務涉及跨檔案修改，適合改完後獨立挑錯）？",
       "is_multi_select": false,
       "options": [
-        "(Recommended) 改完後派 1 個唯讀子代理挑錯審查 — 主對話負責改檔，完成後派 research 子代理檢查有無漏改或邊界錯誤",
+        "(Recommended) 改完後派 1 個唯讀子代理挑錯審查 — 主對話負責改檔，完成後派 research 子代理檢查有無漏改或邊界錯誤（亦可調用 OpenCode CLI 並自選模型）",
         "不使用子代理 — 全程留在主對話處理，最省 token"
       ]
     }

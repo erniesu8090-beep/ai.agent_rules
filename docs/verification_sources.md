@@ -1,7 +1,7 @@
 # 查證狀態與來源總表
 
 > 用途：集中管理「哪些說法有官方依據、哪些只是推測、哪些查不到」，方便每月重新查證，也避免同一件事在不同文件寫成不同版本。
-> 說明：本表**沿用原文件在 2026-10-19～2026-10-28 的查證結果**，2026-10-29 整併、2026-10-31 增補部分來源。狀態改變時，同步更新來源文件與本表。
+> 說明：本表**沿用原文件在 2026-10-19～2026-10-28 的查證結果**，2026-10-29 整併、2026-10-31～11-04 增補部分來源。狀態改變時，同步更新來源文件與本表。
 > 圖例：**官方**＝官方文件或官方部落格；**二手**＝第三方轉述；**實測**＝本機實際測試；**推測**＝合理判斷但無來源；**查不到**＝找不到資料，不得補成事實。
 
 | 標示 | 意思 | 能不能直接相信 |
@@ -76,6 +76,10 @@
 | OpenCode V2 提問工具 | `question`，選項有 `label`／`description` | 官方 | https://opencode.ai/v2/docs/agents/ | 2026-10-28 |
 | OpenCode V2 Plugins 擴充體系 | @opencode/plugin SDK（TypeScript/npm）；可擴充 server（tools/hooks/agents）、TUI 與桌面 GUI 面板；opencode.jsonc 的 plugins 陣列宣告；支援本機與 npm（Bun 自動快取） | 官方 | https://opencode.ai/v2/docs/plugins/ | 2026-11-02 |
 | OpenCode V2 子代理模型支援 | `.opencode/agents/*.md` 或 `opencode.jsonc` 的 `mode: subagent` 支援任意 `provider/model`（如 `openrouter/...`、`anthropic/...`）；原生支援異質多模型混搭 | 官方 | https://opencode.ai/v2/docs/agents/ | 2026-11-03 |
+| OpenCode V2 Free 共享池限速機制 | 官方未公開固定 RPM，採動態共享池；尖峰或連續 heavy prompt 會跳 `Rate limit exceeded` / `Free usage limit reached`，受 IP/CGNAT 影響 | 官方／二手（Reddit） | https://teamorouter.com 與 Reddit r/opencode 回報 | 2026-11-04 |
+| OpenCode V2 併發控制（ConcurrencyManager） | 槽位式 FIFO 佇列，單一 provider/model 預設並發上限通常為 5 個任務 | 官方（架構） | DeepWiki 與 GitHub OpenCode 架構文件 | 2026-11-04 |
+| OpenCode V2 子代理對 Free 額度消耗 | Reddit 社群回報多子代理/背景任務（如 DeepSeek Flash）是造成急速耗盡配額與 429 鎖定的主因 | 二手（Reddit） | Reddit r/opencode 討論串 | 2026-11-04 |
+| OpenCode V2 `--agent plan` 唯讀鎖定與桌面 App 規則載入 | `opencode run --agent plan` 可從底層沒收寫入工具鎖定唯讀；桌面 App 自動載入 `~/.config/opencode/AGENTS.md` 並辨識 `THIS MACHINE` | 實測 | 2026-11-04 本機與管制機實測 | 2026-11-04 |
 
 ---
 

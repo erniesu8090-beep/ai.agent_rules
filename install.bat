@@ -59,6 +59,10 @@ call :install "%USERPROFILE%\.codex" "AGENTS.md" || goto :fail
 call :install "%USERPROFILE%\.config\opencode" "AGENTS.md" || goto :fail
 if /i not "%MACHINE%"=="controlled" call :settings || goto :fail
 call :opencodecfg || goto :fail
+call :deploy_skills "%USERPROFILE%\.claude\skills" || goto :fail
+call :deploy_skills "%USERPROFILE%\.gemini\config\skills" || goto :fail
+call :deploy_skills "%USERPROFILE%\.codex\skills" || goto :fail
+call :deploy_skills "%USERPROFILE%\.config\opencode\skills" || goto :fail
 del "%SRC%" >nul 2>&1
 
 echo.
@@ -158,6 +162,33 @@ if /i not "%MACHINE%"=="general" (
 >>"%OCFG%" echo   ]
 >>"%OCFG%" echo }
 echo [OK] %OCFG%
+exit /b 0
+
+:deploy_skills
+set "BASE_DST=%~1"
+if not exist "templates\skills" exit /b 0
+set "BASE_SRC=%CD%\templates\skills"
+for /r "%BASE_SRC%" %%f in (*) do (
+    set "FILE=%%f"
+    setlocal enabledelayedexpansion
+    set "REL=!FILE:%BASE_SRC%\=!"
+    set "DST=%BASE_DST%\!REL!"
+    for %%p in ("!DST!\..") do if not exist "%%~fp" mkdir "%%~fp" >nul 2>&1
+    if exist "!DST!" (
+        fc /b "!FILE!" "!DST!" >nul 2>&1 && (
+            echo [SKIP] !DST! is already up to date.
+        ) || (
+            copy /y "!DST!" "!DST!.%TS%.bak" >nul || ( endlocal & exit /b 1 )
+            echo [BACKUP] !DST!.%TS%.bak
+            copy /y "!FILE!" "!DST!" >nul || ( endlocal & exit /b 1 )
+            echo [OK] !DST!
+        )
+    ) else (
+        copy /y "!FILE!" "!DST!" >nul || ( endlocal & exit /b 1 )
+        echo [OK] !DST!
+    )
+    endlocal
+)
 exit /b 0
 
 :fail

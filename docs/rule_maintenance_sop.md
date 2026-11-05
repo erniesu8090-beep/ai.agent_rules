@@ -164,12 +164,13 @@ $t = "$env:TEMP\agentrules_test"
 Remove-Item -Recurse -Force $t -ErrorAction SilentlyContinue
 New-Item -ItemType Directory $t | Out-Null
 $env:USERPROFILE = $t
-cmd /c "install.bat controlled < nul"   # 預期：4 行 [OK]（CLAUDE.md、GEMINI.md、.codex/AGENTS.md、.config/opencode/AGENTS.md）+ 1 行 opencode.jsonc [OK]
-cmd /c "install.bat controlled < nul"   # 預期：5 行 [SKIP]
-cmd /c "install.bat dev < nul"          # 預期：4 組 [BACKUP]+[OK] + settings.json [OK] + opencode.jsonc [SKIP]（前一次已建立）
-cmd /c "install.bat dev < nul"          # 預期：6 行 [SKIP]
-cmd /c "install.bat general < nul"      # 預期：4 組 [BACKUP]+[OK] + settings.json [SKIP] + opencode.jsonc [SKIP]
+cmd /c "install.bat controlled < nul"   # 預期：4 行 rules [OK] + 1 行 opencode.jsonc [OK] + 4 行 skills [OK]
+cmd /c "install.bat controlled < nul"   # 預期：5 行 rules/cfg [SKIP] + 4 行 skills [SKIP]
+cmd /c "install.bat dev < nul"          # 預期：4 組 [BACKUP]+[OK] + settings.json [OK] + opencode.jsonc [SKIP] + 4 行 skills [SKIP]
+cmd /c "install.bat dev < nul"          # 預期：6 行 rules/cfg [SKIP] + 4 行 skills [SKIP]
+cmd /c "install.bat general < nul"      # 預期：4 組 [BACKUP]+[OK] + settings.json [SKIP] + opencode.jsonc [SKIP] + 4 行 skills [SKIP]
 Get-Content "$t\.claude\CLAUDE.md" -Tail 1          # 預期：THIS MACHINE: general
+Get-Content "$t\.gemini\GEMINI.md" -Tail 1          # 預期：THIS MACHINE: general
 Get-Content "$t\.codex\AGENTS.md" -Tail 1           # 預期：THIS MACHINE: general
 Get-Content "$t\.config\opencode\AGENTS.md" -Tail 1 # 預期：THIS MACHINE: general
 Get-Content "$t\.config\opencode\opencode.jsonc"    # 預期：含 instructions 與 permissions
@@ -205,7 +206,7 @@ Remove-Item -Recurse -Force $t
 | 現有測試漏掉的破口 | 看程式碼就懂的架構 |
 | 外部資料格式意外 | 已從根本修掉的問題 |
 
-流程：先提案那一行 → 使用者同意 → 寫進專案 `AGENTS.md` 或 `tests/` → 刪掉已根治的舊坑 → 維持 10 條／200 行。
+流程：先提案那一行 → 使用者同意 → 於任務收尾時寫進專案 `AGENTS.md`（避免對話中途改規則破壞快取）或 `tests/` → 刪掉已根治的舊坑 → 維持 10 條／200 行。
 
 ### 7-1 規則提案單欄位
 

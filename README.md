@@ -14,8 +14,8 @@
 flowchart LR
   subgraph REPO["本倉庫 ai.agent_rules"]
     G["global_rules.md<br/>全域規則本體"]
-    M["machine_rules/&lt;電腦&gt;.md<br/>只給某一台"]
-    T["templates/<br/>新專案範本"]
+    M["machine_rules/<br/>personal.md + &lt;電腦&gt;.md"]
+    T["templates/<br/>新專案範本 + 全域 skills/"]
     D["docs/coding_agent_features_table.md<br/>各家工具功能對照（依據）"]
   end
 
@@ -37,7 +37,7 @@ flowchart LR
 flowchart TB
   S["你在某個專案開一個新對話"] --> L1
   L1["① 全域規則<br/>CLAUDE.md / GEMINI.md / AGENTS.md<br/>（global_rules.md + 這台電腦的 machine_rules）"]
-  L1 --> L2["② 工作區 AGENTS.md<br/>例：D:\AI_Workspace\AGENTS.md<br/>⚠ Claude Code 讀得到；OpenCode 要在 opencode.jsonc 指定"]
+  L1 --> L2["② 工作區 AGENTS.md<br/>例：D:\AI_Workspace\AGENTS.md<br/>⚠ Claude Code 讀得到；OpenCode 靠 opencode.jsonc 指定；Antigravity / Codex 讀不到"]
   L2 --> L3["③ 專案 AGENTS.md<br/>個人／公司／逆向 三種範本之一"]
   L3 --> L4["④ PROGRESS.md → SPEC.md（有的話）<br/>AGENTS.md 與全域規則叫 AI 先讀"]
   L4 --> W["開始工作"]
@@ -90,6 +90,7 @@ flowchart TB
 | `templates/PROGRESS.md`、`templates/.gitignore` | AI 與人 | 進度交接檔、Git 排除清單範本 |
 | `templates/SPEC.md` | AI 與人 | 新專案規格範本（還沒寫程式時的規劃，附搬移對照表） |
 | `templates/colab_notebook.md`、`templates/colab_notebook.ipynb` | AI | Colab 筆記本排版規範與骨架（專案要用 Colab 算力時才用） |
+| `templates/skills/opencode-runner/SKILL.md` | AI | OpenCode CLI 跨引擎唯讀審查與動態工作池（Worker Pool）執行指引（安裝腳本自動派發至全域技能目錄） |
 | `docs/ai_agent_engineering.md` | AI 與人 | LLM／agent 原理、七層演進、上下文管理、Harness 稽核 A～J（整併 CS2680、harness、loop 三份）｜什麼時候讀：想理解「為什麼要這樣設計規則」、要稽核或改善 agent 環境時 |
 | `docs/coding_agent_features_table.md` | AI 與人 | 各家 coding agent 功能對照表，附查證日期；設計規則的依據；含 Harness 差異與提問卡片規格｜什麼時候讀：寫規則、改安裝腳本、懷疑工具讀不到規則時 |
 | `docs/claude_code_permissions_deny.md` | AI 與人 | Claude Code 防凍結規則與 `permissions.deny` 設定說明｜什麼時候讀：新增敏感專案、Claude 被 safeguards 擋住時 |
@@ -122,6 +123,7 @@ flowchart TB
   - `general`（通用／同事模式）= `global_rules.md` + 最後一行 `THIS MACHINE: general`
   - `home`／`dev`／`controlled`（個人模式）= `global_rules.md` + `machine_rules/personal.md` +（有的話）`machine_rules/<電腦代號>.md` + 最後一行 `THIS MACHINE: <電腦代號>`
 - 安裝目的地：`~/.claude/CLAUDE.md`（Claude Code）、`~/.gemini/GEMINI.md`（Antigravity）、`~/.codex/AGENTS.md`（Codex）、`~/.config/opencode/AGENTS.md`（OpenCode）。
+- 全域技能派發：自動將 `templates/skills/` 內的所有通用技能（如 `opencode-runner`）同步至各 Agent 全域技能目錄（`~/.claude/skills/`、`~/.gemini/config/skills/`、`~/.codex/skills/`、`~/.config/opencode/skills/`）。
 - 原本已有的檔案會先備份成 `CLAUDE.md.日期_時間.bak`（其他目的地同理）；內容相同就略過。
 - 開發機與通用機（home、dev、general）另外設定 Claude Code **同時讀 `CLAUDE.md` 與 `AGENTS.md`**（個人模式另含 **資安防凍結阻擋清單 `permissions.deny`**）：`~/.claude/settings.json` 不存在就建立；已存在只檢查，缺少設定時顯示 `[WARN]`，請手動在檔案裡加入下面這段（和原有內容合併，注意逗號；細節見 `docs/claude_code_permissions_deny.md`）：
   ```json
@@ -248,7 +250,7 @@ flowchart LR
 
 | 用途 | 指令 | 開發機（Windows／Ubuntu） | 管制機 |
 |---|---|---|---|
-| AI 寫程式 | `claude`（Claude Code）、`agy`（Antigravity）、`codex`（Codex）、`opencode`（OpenCode，`npm i -g @opencode/cli`，支援 `opencode run` 背景子代理；未在 PATH 時用桌面 App） | 都要 | Antigravity、OpenCode（無法使用 Claude Code、Codex） |
+| AI 寫程式 | `claude`（Claude Code）、`agy`（Antigravity）、`codex`（Codex）、`opencode`（OpenCode，支援 `opencode run` 背景子代理；未在 PATH 時用桌面 App） | 都要（`npm i -g @opencode/cli`） | Antigravity、`opencode`（免安裝獨立版，限用免費模型；無法使用 Claude Code、Codex） |
 | 版控 | `git`、`git-lfs`、`gh` | 都要 | 只用 GitSync 內附 PortableGit；`gh` 不需要（連不到 GitHub） |
 | Python | `python`（3.11）、`pip`、`uv` | 都要；Ubuntu 用 `uv` 取得 3.11 | 有 `py -3.11`；`uv` 未確認 |
 | Node.js | `node`、`npm`、`npx` | 都要 | 不安裝（官方安裝檔需管理員權限） |
