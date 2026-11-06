@@ -1,6 +1,6 @@
 # PROGRESS　進度與交接
 
-> 最後更新：2026-11-03（管制機）
+> 最後更新：2026-11-05（管制機）
 > 新對話接手：先讀 `AGENTS.md` → 本檔 → `README.md`「三、檔案總覽」
 
 ## 一、目前階段
@@ -85,6 +85,7 @@
 - 在管制機上用 VBScript 啟動 GUI 程式：`shell.Run command, 0, False` 的參數 `0` 會隱藏視窗（SW_HIDE）；改用 `1` 則因父程序結束觸發 Windows 防止搶焦點機制被壓在底層；改用 `Shell.Application`（`ShellExecute`）則被端點防毒（Apex One）攔截。結論：需要啟動 GUI 程式並置頂顯示時，直接使用 `.cmd` 搭配 `start` 最相容穩定（2026-10-20 實測）。
 - 以工作區與專案目錄的 `.claudeignore` 隔離敏感專案（2026-10-22 設定，實測無法阻止 Claude Code 讀取或觸發資安審查凍結；2026-10-24 改用 `settings.json` 的 `permissions.deny` 與規則條文限制）。
 - 在 Windows 子進程或背景執行 OpenCode CLI 未關閉 stdin：OpenCode 會因等待 stdin EOF 而卡死（Empty log）；必須以 `cmd /c` 包裹並在末尾加 `< nul` 立即關閉 stdin 管道（2026-11-03 實測）。
+- 在 Python 腳本內以一般三引號字串 `"""..."""` 內嵌含 JavaScript 的 HTML 範本：JS 正規表示式（如 `split(/\r?\n/)`、`replace(/^\uFEFF/, "")`）會被 Python 轉義成實體換行，導致瀏覽器載入時發生 `SyntaxError: Invalid regular expression: missing /` 讓整段 `<script>` 失效；必須使用原始字串 `r"""..."""` 並抽取 `<script>` 以 `node --check` 驗證語法（2026-11-05 實測）。
 
 ## 六、下一步
 
@@ -157,3 +158,4 @@
 | 2026-11-02 | 管制機 | 雙向融合住家 10/31 版與管制機 10/27 版：升級至 10/31 全部新規則與 5 份 `docs/` 技術文件，同時完整保留管制機 VBS `Shell.Application` 防毒攔截、Windows Tkinter 高 DPI 與動態尺寸、桌面工具完工收納 PDF 手冊及管制機 Codex 生圖限制；舊 `doc/` 與 `workspace_rules/` 依兩段式刪除移至 `_pending_delete/` |
 | 2026-11-03 | 住家開發機 | 安裝 `@opencode/cli` 全域 CLI（v2.2.5）；新增調用 OpenCode 跳卡片選模型（Free 與 OpenRouter 1017，強制加 `--auto`）與 `< nul` 防 stdin 卡死規則；完成 Plugins 與四大工具子代理跨模型調度對照；拆分個人環境至 `machine_rules/personal.md` 並新增 `general` 通用安裝模式 |
 | 2026-11-03 | 管制機 | 雙向完整融合住家 11/03 版與管制機 11/02 版：導入 `machine_rules/personal.md` 個人拆分架構、`general` 通用模式、OpenCode CLI 調用規範、Plugins 與子代理跨模型對照表，同時完整保留四家工具（含 Codex）安裝、商業軟體收納／PDF 手冊／Tkinter 高 DPI、管制機 VBS `Shell.Application` 防毒攔截與 AI 生圖規範，且 `controlled` 合成總行數壓在 200 行內 |
+| 2026-11-05 | 管制機 | `global_rules.md` 第 7 節補入「Python 內嵌多行 HTML/JS 範本一律使用原始字串 `r"""..."""` 並以 `node --check` 驗證 `<script>` 語法」規則（不增加行數，維持 137 行） |

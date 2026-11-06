@@ -88,7 +88,7 @@
 
 ## 7. 路徑、編碼與腳本
 
-- 路徑與編碼：禁止硬編碼磁碟代號（`C:\`、`D:\`）與反斜線，使用 `pathlib.Path` 並以程式檔所在位置推算專案路徑；檔名大小寫保持一致（Linux 區分大小寫）。文字檔（.py、.json、.md、.html、.csv）一律 UTF-8；Python 開檔時明確指定 `encoding="utf-8"`。
+- 路徑與編碼：禁止硬編碼磁碟代號（`C:\`、`D:\`）與反斜線，使用 `pathlib.Path` 並以程式檔所在位置推算專案路徑；檔名大小寫保持一致（Linux 區分大小寫）。文字檔（.py、.json、.md、.html、.csv）一律 UTF-8；Python 開檔時明確指定 `encoding="utf-8"`。Python 內嵌多行 HTML/JS 範本時一律使用原始字串 `r"""..."""`（防止 JS 正規表示式如 `\r?\n`、`^\uFEFF` 被 Python 轉義成實體換行導致整段 `<script>` 語法崩潰），產出 HTML 後抽取 `<script>` 以 `node --check` 驗證語法（2026-11-05 實測）。
 - `.bat` 與 `.vbs`：`.bat` 用 CRLF 換行，開頭加 `cd /d "%~dp0"`，路徑變數一律加雙引號，預設只用 ASCII；確實需要中文時（如既有公司工具）存成 ANSI / Big5（CP950），不可存 UTF-8，並避開第二個位元組是 `\`、`|`、`^` 的字（如「許、功、蓋」）。`.vbs` 只用 ASCII；`shell.Run` 啟動 GUI 程式不可設為 `0`（`SW_HIDE` 會隱藏視窗）；因 Windows 防搶焦點機制與端點防毒限制，啟動 GUI 程式並置頂顯示時優先使用 `.cmd`／`.bat` 搭配 `start`。
 - `.ps1` 與 `.sh`：`.ps1` 含中文時存成 UTF-8 with BOM（Windows PowerShell 5.1 才不會亂碼）；在受限內部電腦或同事電腦執行的 `.ps1` 只能用 PowerShell 5.1 語法（不可用 `?.`、`??`、`&&`／`||`、三元運算等 PowerShell 7 語法）；交給使用者雙擊的 `.bat` 啟動 `.ps1` 時，在 `.bat` 內寫 `powershell -NoProfile -ExecutionPolicy Bypass -File`。`.sh` 用 LF 換行並具備執行權限。
 - 跨平台與視窗工具（Tkinter）：需要在 Linux 執行的專案，Windows 專屬指令（taskkill、netstat、start、cmd.exe 等）必須以 `sys.platform` 判斷分流並提供 Linux 對應作法。Windows Python Tkinter 視窗工具啟動時呼叫 `ctypes.windll.shcore.SetProcessDpiAwareness(1)` 啟用高 DPI 清晰字體（自訂圖示時一併設 `SetCurrentProcessExplicitAppUserModelID`），套用原生 `vista` 佈景主題；視窗與對話框尺寸須在元件建立後以 `update_idletasks()` 搭配 `winfo_reqwidth()`／`winfo_reqheight()` 動態計算下限，不可寫死窄小像素寬高，避免 125%／150% 縮放時文字或按鈕被截斷。
