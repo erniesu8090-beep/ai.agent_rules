@@ -65,6 +65,35 @@ install_to "$HOME/.gemini" GEMINI.md
 install_to "$HOME/.codex" AGENTS.md
 install_to "$HOME/.config/opencode" AGENTS.md
 
+deploy_skills() {
+    base_dst="$1"
+    [ -d "templates/skills" ] || return 0
+    (
+        cd "templates/skills"
+        find . -type f | while read -r f; do
+            rel="${f#./}"
+            sfile="$rel"
+            dst="$base_dst/$rel"
+            mkdir -p "$(dirname "$dst")"
+            if [ -f "$dst" ]; then
+                if cmp -s "$sfile" "$dst"; then
+                    echo "[SKIP] $dst 已是最新"
+                    continue
+                fi
+                cp "$dst" "$dst.$ts.bak"
+                echo "[BACKUP] $dst.$ts.bak"
+            fi
+            cp "$sfile" "$dst"
+            echo "[OK] $dst"
+        done
+    )
+}
+
+deploy_skills "$HOME/.claude/skills"
+deploy_skills "$HOME/.gemini/config/skills"
+deploy_skills "$HOME/.codex/skills"
+deploy_skills "$HOME/.config/opencode/skills"
+
 if [ "$machine" != controlled ]; then
     if command -v claude >/dev/null 2>&1; then
         cver=$(claude --version 2>/dev/null || true)
