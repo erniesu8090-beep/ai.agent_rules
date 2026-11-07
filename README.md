@@ -91,6 +91,7 @@ flowchart TB
 | `templates/SPEC.md` | AI 與人 | 新專案規格範本（還沒寫程式時的規劃，附搬移對照表） |
 | `templates/colab_notebook.md`、`templates/colab_notebook.ipynb` | AI | Colab 筆記本排版規範與骨架（專案要用 Colab 算力時才用） |
 | `templates/skills/opencode-runner/SKILL.md` | AI | OpenCode CLI 跨引擎唯讀審查與動態工作池（Worker Pool）執行指引（安裝腳本自動派發至全域技能目錄） |
+| `templates/skills/google-flow-bridge/SKILL.md` | AI | Google Flow 跨專案生圖（Nano Banana 2K）與生片（Veo MP4/Extend/分鏡故事板）執行指引（安裝腳本自動派發至全域技能目錄） |
 | `docs/ai_agent_engineering.md` | AI 與人 | LLM／agent 原理、七層演進、上下文管理、Harness 稽核 A～J（整併 CS2680、harness、loop 三份）｜什麼時候讀：想理解「為什麼要這樣設計規則」、要稽核或改善 agent 環境時 |
 | `docs/coding_agent_features_table.md` | AI 與人 | 各家 coding agent 功能對照表，附查證日期；設計規則的依據；含 Harness 差異與提問卡片規格｜什麼時候讀：寫規則、改安裝腳本、懷疑工具讀不到規則時 |
 | `docs/claude_code_permissions_deny.md` | AI 與人 | Claude Code 防凍結規則與 `permissions.deny` 設定說明｜什麼時候讀：新增敏感專案、Claude 被 safeguards 擋住時 |

@@ -1,6 +1,6 @@
 # PROGRESS　進度與交接
 
-> 最後更新：2026-11-06（管制機）
+> 最後更新：2026-11-07（住家開發機）
 > 新對話接手：先讀 `AGENTS.md` → 本檔 → `README.md`「三、檔案總覽」
 
 ## 一、目前階段
@@ -29,6 +29,7 @@
 18. OpenCode 子代理 Skill 化、強制鎖定 `--agent plan` 唯讀與動態工作池（Worker Pool，線上上限 3 個）（2026-11-04）：移除全域規則中的 OpenRouter 條文；將具體 CLI 指令與安全規範抽離為獨立 Skill `templates/skills/opencode-runner/SKILL.md`（預設帶入 `opencode/deepseek-v4.1-flash-free#high` 與 `--agent plan` 唯讀鎖定），並採用「階梯式錯峰啟動（間隔 5～10 秒）＋ 線上並行上限 3 個（Worker Pool）」動態遞補機制；由 `install.bat` 與 `install.sh` 的 `:deploy_skills` 自動派發至各 Agent 全域技能目錄。
 19. 跨機同步規則精簡與快取命中（Prompt Caching）強化（2026-11-04）：將 `machine_rules/personal.md` 跨機同步長文字精簡為 1 條核心指引；`global_rules.md` 第 9 節明訂「除錯後經驗沉澱」於任務收尾時寫入專案 `AGENTS.md`；三份專案範本（`templates/AGENTS*.md`）將「已知的坑」移至全檔最末尾（公司與逆向範本置於標記區塊結束之後）。
 20. 雙向完整融合管制機 11/04 版、獨立 `SKILL.md` 與本工作區版本（2026-11-05）：完整合入 `opencode-runner` Skill 動態工作池、`--agent plan` 唯讀鎖定、安裝腳本四家工具全域 Skill 自動派發、快取命中設計、LLM 工具手腳架構與管制機實測紀錄，同時 100% 保留四家工具（含 Codex）支援、商業軟體收納／PDF 手冊／Tkinter 高 DPI、VBS 防毒限制與 AI 生圖規範。
+21. 打包與分發 Google Flow 跨專案生圖與生片技能（2026-11-07）：建立 `templates/skills/google-flow-bridge/SKILL.md`，支援自動偵測工作區路徑、免 API Key 直接消耗 Google Flow 點數與每日配額生成 Nano Banana 2K 圖片、Veo 720p 影片、Extend 接續生成與分鏡故事板管線；同步由安裝機制派發至四大 Agent 全域技能目錄（`~/.claude/skills/`、`~/.codex/skills/`、`~/.config/opencode/skills/`、`~/.gemini/config/skills/`）。
 
 ## 二、使用者已確認的事
 
@@ -178,3 +179,4 @@
 | 2026-11-05 | 住家開發機 | 雙向完整融合 Downloads 11/04 版、獨立 `SKILL.md` 與本工作區版本：合入 `opencode-runner` 動態工作池、`--agent plan` 唯讀鎖定、四家工具全域 Skill 自動派發、快取命中設計、LLM 工具手腳架構與管制機實測紀錄，同時完整保留四家工具（含 Codex）支援、商業軟體收納／PDF 手冊／Tkinter 高 DPI、VBS 防毒限制與 AI 生圖規範，通過全部 4 項驗證並實裝至本機 |
 | 2026-11-05 | 管制機 | `global_rules.md` 第 7 節補入「Python 內嵌多行 HTML/JS 範本一律使用原始字串 `r"""..."""` 並以 `node --check` 驗證 `<script>` 語法」規則（不增加行數，維持 137 行） |
 | 2026-11-06 | 管制機 | 雙向融合 GitHub 遠端（住家 11/05 版含 opencode-runner）與管制機 11/05 原始字串規則更新 |
+| 2026-11-07 | 住家開發機 | 打包與分發 Google Flow 技能（templates/skills/google-flow-bridge/SKILL.md）至四大 Agent 技能庫，支援 Nano Banana 2K 生圖、Veo 720p 生片、Extend 與 Storyboard |
