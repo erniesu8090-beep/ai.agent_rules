@@ -92,6 +92,7 @@ flowchart TB
 | `templates/colab_notebook.md`、`templates/colab_notebook.ipynb` | AI | Colab 筆記本排版規範與骨架（專案要用 Colab 算力時才用） |
 | `templates/skills/opencode-runner/SKILL.md` | AI | OpenCode CLI 跨引擎唯讀審查與動態工作池（Worker Pool）執行指引（安裝腳本自動派發至全域技能目錄） |
 | `templates/skills/google-flow-bridge/SKILL.md` | AI | Google Flow 跨專案生圖（Nano Banana 2K）與生片（Veo MP4/Extend/分鏡故事板）執行指引（安裝腳本自動派發至全域技能目錄） |
+| `templates/skills/gemini-web-imagegen/SKILL.md` | AI | Gemini 網頁版（`gemini.google.com`）Cookie 額度無頭 2K 生圖與 Image-to-Image 改圖技能（含 CDP 免 F12 自動提取 Cookie 腳本，安裝腳本自動派發至全域技能目錄） |
 | `templates/skills/threejs/SKILL.md` | AI | Three.js r170 現代 Web 3D 與模型檢視器開發指引（含最新繁中文件連結、Import Map 單檔架構、GLTF 載入與效能最佳化，安裝腳本自動派發至全域技能目錄） |
 | `docs/ai_agent_engineering.md` | AI 與人 | LLM／agent 原理、七層演進、上下文管理、Harness 稽核 A～J（整併 CS2680、harness、loop 三份）｜什麼時候讀：想理解「為什麼要這樣設計規則」、要稽核或改善 agent 環境時 |
 | `docs/coding_agent_features_table.md` | AI 與人 | 各家 coding agent 功能對照表，附查證日期；設計規則的依據；含 Harness 差異與提問卡片規格｜什麼時候讀：寫規則、改安裝腳本、懷疑工具讀不到規則時 |
@@ -335,10 +336,13 @@ flowchart LR
          Copy-Item -LiteralPath $genFile.FullName -Destination $target -Force
      }
      ```
-3. **禁止事項**：
+3. **第三優先（備援或指名）：Gemini 網頁版免費額度 `gemini-web-imagegen`（免 API Key，走 `gemini.google.com` 網頁端 Cookie 額度）**
+   - 當第一優先（Codex）與第二優先（Antigravity 內建生圖）因密集生成約 12～20 張觸發 `429 RESOURCE_EXHAUSTED`（約 4～5 小時冷卻）時，或使用者指定「用 Gemini 網頁版生圖」時採用。
+   - 透過全域技能 `gemini-web-imagegen` 內附之 `scripts/gemini_web_gen.py`（基於 `gemini-webapi >= 2.1.1`），自動從本機已登入之 Chromium/Edge 設定檔以 CDP 無頭提取 `__Secure-1PSID` 與 `__Secure-1PSIDTS`（免手動按 F12），直接向 `gemini.google.com` 發送生圖或參考圖改圖請求並自動補償至 2K（2560×1440 / 2048px）畫質。
+4. **禁止事項**：
    - 嚴禁使用 Pollinations 等第三方免費生圖網站、帶浮水印或降畫質的替代服務。
    - 未經使用者明確要求，不得切換至需要 `OPENAI_API_KEY` 的付費 CLI／API 模式。
-4. **Gemini 頻率限制與防鎖自保機制（重要避坑）**：
+5. **Gemini 頻率限制與防鎖自保機制（重要避坑）**：
    - **原因**：Google 生圖模型（Imagen 3 系列）對短時間內的高頻請求有嚴格的 RPM（Requests Per Minute）限制與防濫用風控，連續快速請求極易觸發 HTTP 429（`RESOURCE_EXHAUSTED`）並導致帳號被暫時凍結 5～15 分鐘。
    - **批次產圖首選 Codex**：短劇分鏡（如一次生成 10 鏡以上首幀）等批次任務，一律優先使用第一優先的 Codex。
    - **Gemini 批次防護守則**：若需透過腳本使用 Gemini 連續產圖，務必在每張圖片之間加入強制冷卻暫停（建議 `time.sleep(18)`，至少 15～20 秒）；若捕獲限流或 429 錯誤，必須指數退避休眠至少 60 秒再重試，嚴禁使用 `for` 迴圈無間隔狂刷。

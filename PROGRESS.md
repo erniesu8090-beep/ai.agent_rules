@@ -31,6 +31,7 @@
 20. 雙向完整融合管制機 11/04 版、獨立 `SKILL.md` 與本工作區版本（2026-11-05）：完整合入 `opencode-runner` Skill 動態工作池、`--agent plan` 唯讀鎖定、安裝腳本四家工具全域 Skill 自動派發、快取命中設計、LLM 工具手腳架構與管制機實測紀錄，同時 100% 保留四家工具（含 Codex）支援、商業軟體收納／PDF 手冊／Tkinter 高 DPI、VBS 防毒限制與 AI 生圖規範。
 21. 打包與分發 Google Flow 跨專案生圖與生片技能（2026-11-07）：建立 `templates/skills/google-flow-bridge/SKILL.md`，支援自動偵測工作區路徑、免 API Key 直接消耗 Google Flow 點數與每日配額生成 Nano Banana 2K 圖片、Veo 720p 影片、Extend 接續生成與分鏡故事板管線；同步由安裝機制派發至四大 Agent 全域技能目錄（`~/.claude/skills/`、`~/.codex/skills/`、`~/.config/opencode/skills/`、`~/.gemini/config/skills/`）。
 22. 收錄 Three.js r170 現代 Web 3D 與互動檢視器技能（2026-11-08）：建立 `templates/skills/threejs/SKILL.md`，收錄最新繁中文件（r170）、現代 ES Module / Import Map 單檔架構、本地 3D 模型載入（GLTF/GLB 自適應相機視距）、材質光影與記憶體防洩漏（dispose）規範；同步納入四大 Agent 全域技能派發機制。
+23. 收錄 Gemini Web 網頁版免費額度生圖技能（`gemini-web-imagegen`）並列為生圖第三優先備援（2026-11-08）：建立 `templates/skills/gemini-web-imagegen/`（含 `SKILL.md` 與 `scripts/gemini_web_gen.py`），整合 `gemini-webapi` 2.x 與 Chromium CDP 無頭自動提取 `__Secure-1PSID`／`__Secure-1PSIDTS` 機制，支援跨專案 2K 文生圖與 Image-to-Image 改圖，並由安裝腳本統一派發至四大 Agent 全域技能目錄。
 
 ## 二、使用者已確認的事
 
@@ -183,3 +184,4 @@
 | 2026-11-05 | 管制機 | `global_rules.md` 第 7 節補入「Python 內嵌多行 HTML/JS 範本一律使用原始字串 `r"""..."""` 並以 `node --check` 驗證 `<script>` 語法」規則（不增加行數，維持 137 行） |
 | 2026-11-06 | 管制機 | 雙向融合 GitHub 遠端（住家 11/05 版含 opencode-runner）與管制機 11/05 原始字串規則更新 |
 | 2026-11-07 | 住家開發機 | 打包與分發 Google Flow 技能（templates/skills/google-flow-bridge/SKILL.md）至四大 Agent 技能庫，支援 Nano Banana 2K 生圖、Veo 720p 生片、Extend 與 Storyboard |
+| 2026-11-08 | 住家開發機 | 收錄 Three.js r170 技能（templates/skills/threejs/SKILL.md）與 Gemini Web 網頁版免費額度生圖技能（templates/skills/gemini-web-imagegen/），更新 global_rules 與 README 將 Gemini Web 列為生圖第三優先備援並派發至四大 Agent 全域技能庫 |
