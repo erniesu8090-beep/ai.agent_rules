@@ -1,6 +1,6 @@
 # PROGRESS　進度與交接
 
-> 最後更新：2026-11-06（管制機）
+> 最後更新：2026-11-09（管制機）
 > 新對話接手：先讀 `AGENTS.md` → 本檔 → `README.md`「三、檔案總覽」
 
 ## 一、目前階段
@@ -30,8 +30,14 @@
 19. 跨機同步規則精簡與快取命中（Prompt Caching）強化（2026-11-04）：將 `machine_rules/personal.md` 跨機同步長文字精簡為 1 條核心指引；`global_rules.md` 第 9 節明訂「除錯後經驗沉澱」於任務收尾時寫入專案 `AGENTS.md`；三份專案範本（`templates/AGENTS*.md`）將「已知的坑」移至全檔最末尾（公司與逆向範本置於標記區塊結束之後）。
 20. 雙向完整融合管制機 11/04 版、獨立 `SKILL.md` 與本工作區版本（2026-11-05）：完整合入 `opencode-runner` Skill 動態工作池、`--agent plan` 唯讀鎖定、安裝腳本四家工具全域 Skill 自動派發、快取命中設計、LLM 工具手腳架構與管制機實測紀錄，同時 100% 保留四家工具（含 Codex）支援、商業軟體收納／PDF 手冊／Tkinter 高 DPI、VBS 防毒限制與 AI 生圖規範。
 21. 合成規則排版與同主題列點精簡（2026-11-06）：在不刪減任何規則、實測結論與日期的前提下，整併 `global_rules.md`（135 → 67 行）、`machine_rules/personal.md`（23 → 19 行）與 `machine_rules/controlled.md`（32 → 22 行），使最長的 `controlled` 合成後規則從 195 行降至 113 行（預留 87 行空間）。
+22. 打包與分發 Google Flow 跨專案生圖與生片技能（2026-11-07）：建立 `templates/skills/google-flow-bridge/SKILL.md`，支援自動偵測工作區路徑、免 API Key 直接消耗 Google Flow 點數與每日配額生成 Nano Banana 2K 圖片、Veo 720p 影片、Extend 接續生成與分鏡故事板管線；同步由安裝機制派發至四大 Agent 全域技能目錄（`~/.claude/skills/`、`~/.codex/skills/`、`~/.config/opencode/skills/`、`~/.gemini/config/skills/`）。
+23. 收錄 Three.js r170 現代 Web 3D 與互動檢視器技能（2026-11-08）：建立 `templates/skills/threejs/SKILL.md`，收錄最新繁中文件（r170）、現代 ES Module / Import Map 單檔架構、本地 3D 模型載入（GLTF/GLB 自適應相機視距）、材質光影與記憶體防洩漏（dispose）規範；同步納入四大 Agent 全域技能派發機制。
+24. 收錄 Gemini Web 網頁版免費額度生圖技能（`gemini-web-imagegen`）並列為生圖第三優先備援（2026-11-08）：建立 `templates/skills/gemini-web-imagegen/`（含 `SKILL.md` 與 `scripts/gemini_web_gen.py`），整合 `gemini-webapi` 2.x 與 Chromium CDP 無頭自動提取 `__Secure-1PSID`／`__Secure-1PSIDTS` 機制，支援跨專案 2K 文生圖與 Image-to-Image 改圖，並由安裝腳本統一派發至四大 Agent 全域技能目錄。
+25. 雙向融合 GitHub 遠端技能更新與管制機規則精簡版（2026-11-09）：合入 Google Flow、Three.js、Gemini Web 生圖三大通用技能；保留管制機 11/06 規則排版精簡成果（`global_rules.md` 67 行），合成後維持 113 行且無衝突完成同步。
 
 ## 二、使用者已確認的事
+
+- 收錄 Three.js 繁中文件與指引為通用技能（Skill）（2026-11-08）：依 CS2680 與「能不放全域就不放」原則，不寫入 `global_rules.md` 避免無關對話浪費 Token，採用通用技能 `templates/skills/threejs/SKILL.md`，在使用者提到「Three.js」、「Web 3D」、「WebGL 渲染」時才觸發，並由安裝腳本統一派發至四大 Agent 全域技能目錄。
 
 - 功能對照表只收 coding agent（Claude Code、Antigravity、Codex、OpenCode），不收聊天介面；檔名用 `coding_agent_features_table.md`（2026-10-19；2026-10-24 擴充；2026-10-29 改名）
 - 對照表每 1 個月重新查證一次（2026-10-19）
@@ -179,3 +185,6 @@
 | 2026-11-05 | 住家開發機 | 雙向完整融合 Downloads 11/04 版、獨立 `SKILL.md` 與本工作區版本：合入 `opencode-runner` 動態工作池、`--agent plan` 唯讀鎖定、四家工具全域 Skill 自動派發、快取命中設計、LLM 工具手腳架構與管制機實測紀錄，同時完整保留四家工具（含 Codex）支援、商業軟體收納／PDF 手冊／Tkinter 高 DPI、VBS 防毒限制與 AI 生圖規範，通過全部 4 項驗證並實裝至本機 |
 | 2026-11-05 | 管制機 | `global_rules.md` 第 7 節補入「Python 內嵌多行 HTML/JS 範本一律使用原始字串 `r"""..."""` 並以 `node --check` 驗證 `<script>` 語法」規則（不增加行數，維持 137 行） |
 | 2026-11-06 | 管制機 | 雙向融合 GitHub 遠端（住家 11/05 版含 opencode-runner）與管制機 11/05 原始字串規則更新；精簡 `global_rules.md`（67 行）、`personal.md`（19 行）與 `controlled.md`（22 行）排版與同主題列點，最長 `controlled` 合成規則降至 113 行 |
+| 2026-11-07 | 住家開發機 | 打包與分發 Google Flow 技能（templates/skills/google-flow-bridge/SKILL.md）至四大 Agent 技能庫，支援 Nano Banana 2K 生圖、Veo 720p 生片、Extend 與 Storyboard |
+| 2026-11-08 | 住家開發機 | 收錄 Three.js r170 技能（templates/skills/threejs/SKILL.md）與 Gemini Web 網頁版免費額度生圖技能（templates/skills/gemini-web-imagegen/），更新 global_rules 與 README 將 Gemini Web 列為生圖第三優先備援並派發至四大 Agent 全域技能庫 |
+| 2026-11-09 | 管制機 | 雙向融合遠端 GitHub 11/07～11/08 新增技能（Google Flow、Three.js、Gemini Web 生圖）與管制機 11/06 規則精簡版，排除衝突完成同步並執行安裝腳本驗證 |
