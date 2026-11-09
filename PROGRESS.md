@@ -29,6 +29,7 @@
 18. OpenCode 子代理 Skill 化、強制鎖定 `--agent plan` 唯讀與動態工作池（Worker Pool，線上上限 3 個）（2026-11-04）：移除全域規則中的 OpenRouter 條文；將具體 CLI 指令與安全規範抽離為獨立 Skill `templates/skills/opencode-runner/SKILL.md`（預設帶入 `opencode/deepseek-v4.1-flash-free#high` 與 `--agent plan` 唯讀鎖定），並採用「階梯式錯峰啟動（間隔 5～10 秒）＋ 線上並行上限 3 個（Worker Pool）」動態遞補機制；由 `install.bat` 與 `install.sh` 的 `:deploy_skills` 自動派發至各 Agent 全域技能目錄。
 19. 跨機同步規則精簡與快取命中（Prompt Caching）強化（2026-11-04）：將 `machine_rules/personal.md` 跨機同步長文字精簡為 1 條核心指引；`global_rules.md` 第 9 節明訂「除錯後經驗沉澱」於任務收尾時寫入專案 `AGENTS.md`；三份專案範本（`templates/AGENTS*.md`）將「已知的坑」移至全檔最末尾（公司與逆向範本置於標記區塊結束之後）。
 20. 雙向完整融合管制機 11/04 版、獨立 `SKILL.md` 與本工作區版本（2026-11-05）：完整合入 `opencode-runner` Skill 動態工作池、`--agent plan` 唯讀鎖定、安裝腳本四家工具全域 Skill 自動派發、快取命中設計、LLM 工具手腳架構與管制機實測紀錄，同時 100% 保留四家工具（含 Codex）支援、商業軟體收納／PDF 手冊／Tkinter 高 DPI、VBS 防毒限制與 AI 生圖規範。
+21. 合成規則排版與同主題列點精簡（2026-11-06）：在不刪減任何規則、實測結論與日期的前提下，整併 `global_rules.md`（135 → 67 行）、`machine_rules/personal.md`（23 → 19 行）與 `machine_rules/controlled.md`（32 → 22 行），使最長的 `controlled` 合成後規則從 195 行降至 113 行（預留 87 行空間）。
 
 ## 二、使用者已確認的事
 
@@ -177,4 +178,4 @@
 | 2026-11-04 | 管制機 | 實測 OpenCode 桌面 App 確認載入 `~/.config/opencode/AGENTS.md`；強化快取命中設計（經驗沉澱於收尾寫入、三份 `templates/AGENTS*.md` 將已知的坑移至末尾）；精簡 `personal.md` 跨機同步條文；建置 `templates/skills/opencode-runner/SKILL.md`（強制 `--agent plan` 唯讀鎖定與動態工作池 Worker Pool 線上上限 3 個），並於 `install.bat`／`install.sh` 實裝全域 Skill 自動派發機制 |
 | 2026-11-05 | 住家開發機 | 雙向完整融合 Downloads 11/04 版、獨立 `SKILL.md` 與本工作區版本：合入 `opencode-runner` 動態工作池、`--agent plan` 唯讀鎖定、四家工具全域 Skill 自動派發、快取命中設計、LLM 工具手腳架構與管制機實測紀錄，同時完整保留四家工具（含 Codex）支援、商業軟體收納／PDF 手冊／Tkinter 高 DPI、VBS 防毒限制與 AI 生圖規範，通過全部 4 項驗證並實裝至本機 |
 | 2026-11-05 | 管制機 | `global_rules.md` 第 7 節補入「Python 內嵌多行 HTML/JS 範本一律使用原始字串 `r"""..."""` 並以 `node --check` 驗證 `<script>` 語法」規則（不增加行數，維持 137 行） |
-| 2026-11-06 | 管制機 | 雙向融合 GitHub 遠端（住家 11/05 版含 opencode-runner）與管制機 11/05 原始字串規則更新 |
+| 2026-11-06 | 管制機 | 雙向融合 GitHub 遠端（住家 11/05 版含 opencode-runner）與管制機 11/05 原始字串規則更新；精簡 `global_rules.md`（67 行）、`personal.md`（19 行）與 `controlled.md`（22 行）排版與同主題列點，最長 `controlled` 合成規則降至 113 行 |
