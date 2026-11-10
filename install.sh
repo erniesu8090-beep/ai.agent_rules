@@ -194,4 +194,16 @@ JSON
     echo "[OK] $ocfg"
 fi
 
+# 自動連動 ai.agent_skills 全域技能部署（若存在）
+skills_sh=""
+if [ -f "../ai.agent_skills/deploy_global_skills.sh" ]; then
+    skills_sh="../ai.agent_skills/deploy_global_skills.sh"
+elif [ -f "../../ai.agent_skills/deploy_global_skills.sh" ]; then
+    skills_sh="../../ai.agent_skills/deploy_global_skills.sh"
+fi
+if [ -n "$skills_sh" ]; then
+    echo "[INFO] 偵測到 ai.agent_skills，觸發全域技能部署..."
+    sh "$skills_sh" || echo "[WARN] 全域技能部署回傳非零代碼"
+fi
+
 echo "[DONE] 已安裝為 $machine，請重新啟動 Claude Code / Antigravity / Codex / OpenCode 以載入新規則"
