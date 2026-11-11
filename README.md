@@ -15,7 +15,7 @@ flowchart LR
   subgraph REPO["本倉庫 ai.agent_rules"]
     G["global_rules.md<br/>全域規則本體"]
     M["machine_rules/<br/>personal.md + &lt;電腦&gt;.md"]
-    T["templates/<br/>新專案範本 + 全域 skills/"]
+    T["templates/<br/>新專案範本（SPEC / PROGRESS / AGENTS）"]
     D["docs/coding_agent_features_table.md<br/>各家工具功能對照（依據）"]
   end
 
@@ -90,10 +90,7 @@ flowchart TB
 | `templates/PROGRESS.md`、`templates/.gitignore` | AI 與人 | 進度交接檔、Git 排除清單範本 |
 | `templates/SPEC.md` | AI 與人 | 新專案規格範本（還沒寫程式時的規劃，附搬移對照表） |
 | `templates/colab_notebook.md`、`templates/colab_notebook.ipynb` | AI | Colab 筆記本排版規範與骨架（專案要用 Colab 算力時才用） |
-| `templates/skills/opencode-runner/SKILL.md` | AI | OpenCode CLI 跨引擎唯讀審查與動態工作池（Worker Pool）執行指引（安裝腳本自動派發至全域技能目錄） |
-| `templates/skills/google-flow-bridge/SKILL.md` | AI | Google Flow 跨專案生圖（Nano Banana 2K）與生片（Veo MP4/Extend/分鏡故事板）執行指引（安裝腳本自動派發至全域技能目錄） |
-| `templates/skills/gemini-web-imagegen/SKILL.md` | AI | Gemini 網頁版（`gemini.google.com`）Cookie 額度無頭 2K 生圖與 Image-to-Image 改圖技能（含 CDP 免 F12 自動提取 Cookie 腳本，安裝腳本自動派發至全域技能目錄） |
-| `templates/skills/threejs/SKILL.md` | AI | Three.js r170 現代 Web 3D 與模型檢視器開發指引（含最新繁中文件連結、Import Map 單檔架構、GLTF 載入與效能最佳化，安裝腳本自動派發至全域技能目錄） |
+| [`ai.agent_skills`](../ai.agent_skills/) | AI 與人 | 獨立對稱之技能母本庫（收錄全域與專案專屬 Skills：`opencode-runner`、`threejs`、`frontend-suite`、`document-skills` 等，安裝腳本自動偵測連動） |
 | `docs/ai_agent_engineering.md` | AI 與人 | LLM／agent 原理、七層演進、上下文管理、Harness 稽核 A～J（整併 CS2680、harness、loop 三份）｜什麼時候讀：想理解「為什麼要這樣設計規則」、要稽核或改善 agent 環境時 |
 | `docs/coding_agent_features_table.md` | AI 與人 | 各家 coding agent 功能對照表，附查證日期；設計規則的依據；含 Harness 差異與提問卡片規格｜什麼時候讀：寫規則、改安裝腳本、懷疑工具讀不到規則時 |
 | `docs/claude_code_permissions_deny.md` | AI 與人 | Claude Code 防凍結規則與 `permissions.deny` 設定說明｜什麼時候讀：新增敏感專案、Claude 被 safeguards 擋住時 |
