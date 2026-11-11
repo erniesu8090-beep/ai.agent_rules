@@ -99,6 +99,7 @@
 | Gemini 生圖高頻呼叫限流（HTTP 429） | 連續快速呼叫易觸發 RPM 上限與 429 `RESOURCE_EXHAUSTED` 暫時冷卻（5～15 分鐘）；批次腳本需加 15～20 秒間隔與 60 秒退避 | 實測 | 2026-10-26 批量生圖實測 | 2026-10-26 |
 | 管制機 VBS `Shell.Application` 防毒攔截 | VBScript 呼叫 `Shell.Application`（`ShellExecute`）啟動外部程式會被端點防毒（Apex One）行為監控直接攔截並告警；GUI 啟動優先改用 `.cmd`／`.bat` 搭配 `start` | 實測 | 2026-10-20 管制機實測 | 2026-10-20 |
 | 管制機 Codex 生圖無法連線 | 管制機無法連線至 OpenAI / Codex 生圖服務，在管制機生圖直接走 Antigravity `image-generator` 子代理 | 實測 | 2026-10-27 管制機實測 | 2026-10-27 |
+| Gemini Web 網頁版生圖備援（`gemini-web-imagegen`） | 透過 `gemini-webapi >= 2.1.1` 與 Chromium CDP（`ws.send_json` Text Frame）自動無頭提取 `__Secure-1PSID`／`__Secure-1PSIDTS`，支援跨專案 2K 文生圖與 `files=[...]` 改圖 | 實測 | 2026-11-08 本機實測 `gemini_web_gen.py` | 2026-11-08 |
 
 ---
 

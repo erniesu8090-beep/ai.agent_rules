@@ -11,16 +11,16 @@ description: 在任何專案中調用本地 Google Flow 自動化工具（flow.g
 
 Google Flow 工具通常位於以下路徑（腳本已內建自動回退與偵測）：
 - `$HOME\Documents\AI AGENT 工作區\GOOGLE FLOW`
-- `c:\Users\ernie\Documents\AI AGENT 工作區\GOOGLE FLOW`
-- `D:\AI_Workspace\GOOGLE FLOW`
+- `<工作區磁碟>:\AI_Workspace\GOOGLE FLOW` 或 `<工作區磁碟>:\AI AGENT實驗區\GOOGLE FLOW`
 
 PowerShell 通用路徑解析起手式：
 ```powershell
 $flowRoot = @(
-    "$HOME\Documents\AI AGENT 工作區\GOOGLE FLOW",
-    "c:\Users\ernie\Documents\AI AGENT 工作區\GOOGLE FLOW",
-    "D:\AI_Workspace\GOOGLE FLOW"
-) | Where-Object { Test-Path $_ } | Select-Object -First 1
+    "$HOME\Documents\AI AGENT 工作區\GOOGLE FLOW"
+) + ((Get-PSDrive -PSProvider FileSystem).Root | ForEach-Object {
+    Join-Path $_ "AI_Workspace\GOOGLE FLOW"
+    Join-Path $_ "AI AGENT實驗區\GOOGLE FLOW"
+}) | Where-Object { Test-Path $_ } | Select-Object -First 1
 
 if (-not $flowRoot) { throw "找不到 Google Flow 專案目錄，請確認已放置於工作區。" }
 $flowPy = Join-Path $flowRoot ".venv\Scripts\python.exe"
@@ -31,10 +31,11 @@ $flowMain = Join-Path $flowRoot "src\main.py"
 
 ```powershell
 $flowRoot = @(
-    "$HOME\Documents\AI AGENT 工作區\GOOGLE FLOW",
-    "c:\Users\ernie\Documents\AI AGENT 工作區\GOOGLE FLOW",
-    "D:\AI_Workspace\GOOGLE FLOW"
-) | Where-Object { Test-Path $_ } | Select-Object -First 1
+    "$HOME\Documents\AI AGENT 工作區\GOOGLE FLOW"
+) + ((Get-PSDrive -PSProvider FileSystem).Root | ForEach-Object {
+    Join-Path $_ "AI_Workspace\GOOGLE FLOW"
+    Join-Path $_ "AI AGENT實驗區\GOOGLE FLOW"
+}) | Where-Object { Test-Path $_ } | Select-Object -First 1
 $flowPy = Join-Path $flowRoot ".venv\Scripts\python.exe"
 $flowMain = Join-Path $flowRoot "src\main.py"
 
@@ -45,10 +46,11 @@ $flowMain = Join-Path $flowRoot "src\main.py"
 
 ```powershell
 $flowRoot = @(
-    "$HOME\Documents\AI AGENT 工作區\GOOGLE FLOW",
-    "c:\Users\ernie\Documents\AI AGENT 工作區\GOOGLE FLOW",
-    "D:\AI_Workspace\GOOGLE FLOW"
-) | Where-Object { Test-Path $_ } | Select-Object -First 1
+    "$HOME\Documents\AI AGENT 工作區\GOOGLE FLOW"
+) + ((Get-PSDrive -PSProvider FileSystem).Root | ForEach-Object {
+    Join-Path $_ "AI_Workspace\GOOGLE FLOW"
+    Join-Path $_ "AI AGENT實驗區\GOOGLE FLOW"
+}) | Where-Object { Test-Path $_ } | Select-Object -First 1
 $flowPy = Join-Path $flowRoot ".venv\Scripts\python.exe"
 $flowMain = Join-Path $flowRoot "src\main.py"
 
@@ -71,10 +73,11 @@ if ($LASTEXITCODE -eq 0 -and (Test-Path $outputFile)) {
 
 ```powershell
 $flowRoot = @(
-    "$HOME\Documents\AI AGENT 工作區\GOOGLE FLOW",
-    "c:\Users\ernie\Documents\AI AGENT 工作區\GOOGLE FLOW",
-    "D:\AI_Workspace\GOOGLE FLOW"
-) | Where-Object { Test-Path $_ } | Select-Object -First 1
+    "$HOME\Documents\AI AGENT 工作區\GOOGLE FLOW"
+) + ((Get-PSDrive -PSProvider FileSystem).Root | ForEach-Object {
+    Join-Path $_ "AI_Workspace\GOOGLE FLOW"
+    Join-Path $_ "AI AGENT實驗區\GOOGLE FLOW"
+}) | Where-Object { Test-Path $_ } | Select-Object -First 1
 $flowPy = Join-Path $flowRoot ".venv\Scripts\python.exe"
 $flowMain = Join-Path $flowRoot "src\main.py"
 
@@ -97,10 +100,11 @@ if ($LASTEXITCODE -eq 0 -and (Test-Path $outputFile)) {
 
 ```powershell
 $flowRoot = @(
-    "$HOME\Documents\AI AGENT 工作區\GOOGLE FLOW",
-    "c:\Users\ernie\Documents\AI AGENT 工作區\GOOGLE FLOW",
-    "D:\AI_Workspace\GOOGLE FLOW"
-) | Where-Object { Test-Path $_ } | Select-Object -First 1
+    "$HOME\Documents\AI AGENT 工作區\GOOGLE FLOW"
+) + ((Get-PSDrive -PSProvider FileSystem).Root | ForEach-Object {
+    Join-Path $_ "AI_Workspace\GOOGLE FLOW"
+    Join-Path $_ "AI AGENT實驗區\GOOGLE FLOW"
+}) | Where-Object { Test-Path $_ } | Select-Object -First 1
 $flowPy = Join-Path $flowRoot ".venv\Scripts\python.exe"
 $flowMain = Join-Path $flowRoot "src\main.py"
 
@@ -126,10 +130,11 @@ $prompt = "The camera pans down to reveal a hidden ancient temple hidden beneath
 - **調用方式**：
   ```powershell
   $flowRoot = @(
-      "$HOME\Documents\AI AGENT 工作區\GOOGLE FLOW",
-      "c:\Users\ernie\Documents\AI AGENT 工作區\GOOGLE FLOW",
-      "D:\AI_Workspace\GOOGLE FLOW"
-  ) | Where-Object { Test-Path $_ } | Select-Object -First 1
+      "$HOME\Documents\AI AGENT 工作區\GOOGLE FLOW"
+  ) + ((Get-PSDrive -PSProvider FileSystem).Root | ForEach-Object {
+      Join-Path $_ "AI_Workspace\GOOGLE FLOW"
+      Join-Path $_ "AI AGENT實驗區\GOOGLE FLOW"
+  }) | Where-Object { Test-Path $_ } | Select-Object -First 1
   $flowPy = Join-Path $flowRoot ".venv\Scripts\python.exe"
   $flowMain = Join-Path $flowRoot "src\main.py"
 

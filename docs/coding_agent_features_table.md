@@ -166,6 +166,7 @@
 | 資安防凍結阻擋讀取敏感專案與啟動資料夾限制（`global_rules.md` 第 8 節、`install.bat`、`install.sh`、README、`docs/claude_code_permissions_deny.md`） | 拒絕讀取特定路徑 |
 | 免記指令全自動提問卡片：規劃／3 檔以上／跨檔案／單檔大改前強制呼叫選擇題卡片，整合「規劃方案＋自我迴圈驗證＋動態子代理」（`global_rules.md` 開頭與第 4、9 節、README、本表第五節） | 互動式選擇題卡片、子代理 |
 | 安裝腳本自動將 `templates/skills/` 派發至四家工具全域技能目錄（`install.bat`、`install.sh`、`AGENTS.md`、README） | Skills |
+| 生圖第三優先備援 `gemini-web-imagegen`、Google Flow 跨專案生圖生片與 Three.js Web 3D 開發指引（`global_rules.md` 第 9 節、`templates/skills/`、README） | Skills |
 | 調用 OpenCode CLI 擔任外部子代理時依 `opencode-runner` Skill 強制加 `--agent plan` 唯讀鎖定、`--auto`、`< nul` 防卡死與動態工作池（`global_rules.md` 開頭與第 9 節、`templates/skills/opencode-runner/SKILL.md`、本表 2-2-1 節） | 規劃與訪談、子代理 |
 | 除錯後篩選重要陷阱與漏掉的測試，先提案確認再於任務收尾時補進專案 `AGENTS.md`（已知的坑放檔案最末尾維持快取命中），維持 10 條／200 行（`global_rules.md` 第 9 節、`templates/AGENTS*.md`、本表第五節） | 自動記憶、容量限制 |
 

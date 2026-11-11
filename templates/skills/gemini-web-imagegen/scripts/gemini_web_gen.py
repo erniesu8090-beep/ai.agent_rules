@@ -61,6 +61,24 @@ def get_global_cookie_path() -> Path:
     return global_dir / "cookies.json"
 
 
+def _get_workspace_roots() -> List[Path]:
+    """動態推算工作區根目錄，避免硬編碼磁碟代號"""
+    roots: List[Path] = []
+    env_ws = os.getenv("AI_WORKSPACE_ROOT", "").strip()
+    if env_ws:
+        roots.append(Path(env_ws))
+    cwd = Path.cwd().resolve()
+    if cwd.anchor:
+        anchor = Path(cwd.anchor)
+        roots.append(anchor / "AI_Workspace")
+        roots.append(anchor / "AI AGENT實驗區")
+    for parent in cwd.parents:
+        if parent.name in ("AI_Workspace", "AI AGENT實驗區", "AI AGENT 工作區"):
+            if parent not in roots:
+                roots.append(parent)
+    return roots
+
+
 def load_cookies() -> Tuple[Optional[str], Optional[str]]:
     """讀取目前已保存的 __Secure-1PSID 與 __Secure-1PSIDTS"""
     psid = os.getenv("GEMINI_1PSID", "").strip()
@@ -73,8 +91,9 @@ def load_cookies() -> Tuple[Optional[str], Optional[str]]:
     candidates = [
         get_global_cookie_path(),
         home_dir / "Documents" / "AI AGENT 工作區" / "專案完成區" / "文書" / "作圖風格" / "cookies.json",
-        Path("D:/AI_Workspace/專案完成區/文書/作圖風格/cookies.json"),
     ]
+    for ws in _get_workspace_roots():
+        candidates.append(ws / "專案完成區" / "文書" / "作圖風格" / "cookies.json")
     for path in candidates:
         if path.is_file():
             try:
@@ -138,8 +157,9 @@ def get_profile_dir() -> Path:
     candidates = [
         home_dir / "Documents" / "AI AGENT 工作區" / "GOOGLE FLOW" / "data" / "browser_profile",
         home_dir / "Documents" / "AI AGENT 工作區" / "專案完成區" / "文書" / "作圖風格" / "data" / "browser_profile",
-        Path("D:/AI_Workspace/GOOGLE FLOW/data/browser_profile"),
     ]
+    for ws in _get_workspace_roots():
+        candidates.append(ws / "GOOGLE FLOW" / "data" / "browser_profile")
     for p in candidates:
         if p.exists():
             return p

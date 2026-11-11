@@ -27,16 +27,24 @@ $skillScript = @(
 ) | Where-Object { Test-Path $_ } | Select-Object -First 1
 
 # 2. 尋找已裝妥 gemini-webapi 的 Python 環境，若無則初始化 ~/.gemini/webapi_venv
-$pyExe = @(
+$pyCandidates = @(
     "$PWD\.venv\Scripts\python.exe",
-    "$HOME\Documents\AI AGENT 工作區\專案完成區\文書\作圖風格\.venv\Scripts\python.exe",
-    "D:\AI_Workspace\專案完成區\文書\作圖風格\.venv\Scripts\python.exe",
-    "$HOME\.gemini\webapi_venv\Scripts\python.exe"
-) | Where-Object { Test-Path $_ } | Select-Object -First 1
+    "$HOME\.gemini\webapi_venv\Scripts\python.exe",
+    "$HOME\Documents\AI AGENT 工作區\專案完成區\文書\作圖風格\.venv\Scripts\python.exe"
+) + ((Get-PSDrive -PSProvider FileSystem).Root | ForEach-Object {
+    Join-Path $_ "AI_Workspace\專案完成區\文書\作圖風格\.venv\Scripts\python.exe"
+}) | Where-Object { Test-Path $_ }
+
+$pyExe = $null
+foreach ($cand in $pyCandidates) {
+    & $cand -c "import gemini_webapi, curl_cffi, PIL" 2>$null
+    if ($LASTEXITCODE -eq 0) { $pyExe = $cand; break }
+}
 
 if (-not $pyExe) {
     $venvDir = "$HOME\.gemini\webapi_venv"
-    python -m venv $venvDir
+    $pyCmd = if (Get-Command py -ErrorAction SilentlyContinue) { "py -3.11" } else { "python" }
+    Invoke-Expression "$pyCmd -m venv `"$venvDir`""
     $pyExe = "$venvDir\Scripts\python.exe"
     & $pyExe -m pip install -q "pillow>=10.0.0" "gemini-webapi>=2.1.1" "curl_cffi>=0.6.0"
 }

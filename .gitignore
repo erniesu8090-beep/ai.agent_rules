@@ -4,6 +4,11 @@
 !.env.example
 *.pfx
 
+# 虛擬環境與 Python 快取
+.venv/
+__pycache__/
+*.pyc
+
 # 備份與待刪除（兩段式刪除）
 *.bak
 *.bak_*

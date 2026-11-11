@@ -34,6 +34,7 @@
 23. 收錄 Three.js r170 現代 Web 3D 與互動檢視器技能（2026-11-08）：建立 `templates/skills/threejs/SKILL.md`，收錄最新繁中文件（r170）、現代 ES Module / Import Map 單檔架構、本地 3D 模型載入（GLTF/GLB 自適應相機視距）、材質光影與記憶體防洩漏（dispose）規範；同步納入四大 Agent 全域技能派發機制。
 24. 收錄 Gemini Web 網頁版免費額度生圖技能（`gemini-web-imagegen`）並列為生圖第三優先備援（2026-11-08）：建立 `templates/skills/gemini-web-imagegen/`（含 `SKILL.md` 與 `scripts/gemini_web_gen.py`），整合 `gemini-webapi` 2.x 與 Chromium CDP 無頭自動提取 `__Secure-1PSID`／`__Secure-1PSIDTS` 機制，支援跨專案 2K 文生圖與 Image-to-Image 改圖，並由安裝腳本統一派發至四大 Agent 全域技能目錄。
 25. 雙向融合 GitHub 遠端技能更新與管制機規則精簡版（2026-11-09）：合入 Google Flow、Three.js、Gemini Web 生圖三大通用技能；保留管制機 11/06 規則排版精簡成果（`global_rules.md` 67 行），合成後維持 113 行且無衝突完成同步。
+26. 規則與技能一致性盤點與清理（2026-11-09）：移除 `google-flow-bridge/SKILL.md` 硬編碼個人帳號路徑與 `gemini_web_gen.py`／`gemini-web-imagegen/SKILL.md` 的硬編碼磁碟代號，改為動態推算與檢查 `gemini_webapi` 套件；同步補齊 `coding_agent_features_table.md` 與 `verification_sources.md` 的生圖備援對照，並更新 `AGENTS.md`／`rule_maintenance_sop.md` 的技能安裝驗證預期行數（20 行 skills）。
 
 ## 二、使用者已確認的事
 
@@ -188,3 +189,4 @@
 | 2026-11-07 | 住家開發機 | 打包與分發 Google Flow 技能（templates/skills/google-flow-bridge/SKILL.md）至四大 Agent 技能庫，支援 Nano Banana 2K 生圖、Veo 720p 生片、Extend 與 Storyboard |
 | 2026-11-08 | 住家開發機 | 收錄 Three.js r170 技能（templates/skills/threejs/SKILL.md）與 Gemini Web 網頁版免費額度生圖技能（templates/skills/gemini-web-imagegen/），更新 global_rules 與 README 將 Gemini Web 列為生圖第三優先備援並派發至四大 Agent 全域技能庫 |
 | 2026-11-09 | 管制機 | 雙向融合遠端 GitHub 11/07～11/08 新增技能（Google Flow、Three.js、Gemini Web 生圖）與管制機 11/06 規則精簡版，排除衝突完成同步並執行安裝腳本驗證 |
+| 2026-11-09 | 管制機 | 完成全專案規則與通用技能一致性檢視與 5 項清理：移除技能內個人帳號與磁碟硬編碼、強化 `gemini-webapi` 環境偵測、補齊對照表與查證來源總表、更新技能驗證預期行數 |
