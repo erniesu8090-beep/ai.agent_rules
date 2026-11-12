@@ -3,7 +3,7 @@
 > 整併自：原 coding_agent_features.md、lightweight_llm_improvement.md、interactive_question_rules.md（2026-10-31 併入第五節）；原始版本已移至資源回收筒或可查 Git 歷史。
 > 範圍：只收**寫程式用的 coding agent**（Claude Code、Antigravity、Codex、OpenCode）；聊天介面（claude.ai、Gemini Apps、ChatGPT 網頁版）不在本表。
 > 用途：設計 `global_rules.md`、`templates/` 規則與安裝腳本的依據。**每一列都有查證日期**；最後一次全面查證超過 1 個月就要重新查。
-> 最後全面查證：2026-10-28（最後整併與增補：2026-11-04）
+> 最後全面查證：2026-10-28（最後整併與增補：2026-11-11）
 > 標記：「—」查無對應功能；「⚠」只有第三方來源、本機實測或尚未查證。
 
 ---
@@ -44,7 +44,7 @@
 | 規劃與訪談 | Plan mode（見 permission-modes 文件） | `/plan`（訪談後產生可審閱的實作計畫）、`/grill-me`（一次一題、推薦答案排第一）；可組合 `/plan /grill-me 任務` | Plan mode（預設啟用 `request_user_input`） | 內建 `plan` agent（唯讀，不改專案檔；TUI 切換）＋自訂 `/plan` 指令 | 2026-10-28 |
 | Skills | `~/.claude/skills/`、`.claude/skills/`；`/名稱` 或依描述自動 | 工作區 `.agents/skills/`；全域 App/IDE `~/.gemini/config/skills/`，CLI `~/.gemini/antigravity-cli/skills/`；`/名稱` 或自動 | 工作區 `.agents/skills/`；全域 `~/.codex/skills/`、`~/.agents/skills/`；`$名稱` 或依描述自動 | `~/.config/opencode/skills/`、`.opencode/skills/<id>/SKILL.md`；**相容讀** `~/.claude/skills/`、`.claude/skills/`、`.agents/skills/`；依描述自動或 `@skill-id` | 2026-10-28 |
 | 手動流程 | Skill 設 `disable-model-invocation: true`；舊 `.claude/commands/` 仍可用 | 舊 Workflows 2026-10-19 起停止運作，用 `/migrate-workflows` 轉成 Skills（官方預告新系統另行公布，待追蹤） | 以 `$skill-name` 點名觸發 Skill | `.opencode/commands/*.md` 或 `commands` 設定（可指定 `agent`／`model`；`subagent: true` 背景執行） | 2026-10-28 |
-| 子代理 | `~/.claude/agents/`、`.claude/agents/`（細節見 2-2-1） | `.agents/agents/<name>.md`、全域 `~/.gemini/config/agents/`（細節見 2-2-1） | `.toml` 子代理設定與內建平行子代理（細節見 2-2-1） | `~/.config/opencode/agents/`、`.opencode/agents/<name>.md`；`mode: subagent`（細節見 2-2-1） | 2026-11-03 |
+| 子代理 | `~/.claude/agents/`、`.claude/agents/`（細節見 2-2-1） | `.agents/agents/<name>.md`、全域 `~/.gemini/config/agents/`；原生支援 Swarm 叢集協作（`/teamwork`）、工作區隔離 `share`/`branch` 與對話分岔 `fork`（細節見 2-2-1） | `.toml` 子代理設定與內建平行子代理（細節見 2-2-1） | `~/.config/opencode/agents/`、`.opencode/agents/<name>.md`；`mode: subagent`（細節見 2-2-1） | 2026-11-11 |
 | 回應風格 | Output styles：`~/.claude/output-styles`、`.claude/output-styles`；`/output-style` | ⚠ 導覽列有「Personas」頁，未查證 | — | —（自訂 agent 的 `system` 可換系統提示） | 2026-10-28 |
 | Plugins | 完整套件：打包 tools、skills、agents、hooks、MCP；`plugin.json`；支援團隊/公開市集（`marketplace.json`）；CLI `claude plugin`、Session `/plugin` | 名稱空間套件（v2.28+）：`plugin.json` 打包 skills、agents、rules、MCP、hooks；市集（Marketplace）分展架與精選；圖形化 Accounts 頁籤管理 OAuth 憑證（如 Google Drive 等 CLI）；指令 `/plugin` | —（透過 Skills 與 MCP servers 擴充） | 模組化套件（TypeScript/npm）：`@opencode/plugin`；可擴充 server（tools、hooks、agents）、TUI 與桌面 GUI 面板；`opencode.jsonc` 的 `plugins` 陣列宣告；本機與 npm 套件（Bun 自動快取） | 2026-11-02 |
 
@@ -65,6 +65,9 @@
 | **模型指定機制** | 自家型號別名：`haiku`、`sonnet`、`opus`、`inherit` | **模型等級抽象（Tiers）**：`flash_lite`、`flash`、`pro`、`inherit` | 自家型號：例如 `gpt-5.6-luna`、`sol`、`inherit` | **完整 Provider 路由**：`provider/model`（如 `anthropic/claude-...`、`openrouter/...`） |
 | **能否跨廠牌混搭？** | **否**（完全鎖定 Anthropic 自家 Claude 模型） | **否**（依當前對話主模型家族做等級分流，無法脫鉤自選第三方品牌） | **否**（完全鎖定 OpenAI 自家 GPT/Codex 體系） | **是（唯一原生支援）**：主對話與子代理可來自完全不同的模型供應商 |
 | **實務跨模型解法** | 外部 CLI 派工（如調用 OpenCode CLI） | **外部 CLI 派工**（透過終端執行 `opencode run -m ...`） | 外部 CLI 派工 | 原生支援在設定檔或指令中直接指定 |
+| **多代理人叢集（Swarm）** | 否（僅單層父子派工） | **原生支援 Native Swarm**（指令 `/teamwork`，透過公共看板與專責 Coordinator、Worker、Narrator、Monitor 角色協作） | 否（僅單層平行 subagents） | 支援自訂多 agent 鏈式與平行執行 |
+| **工作區隔離（Workspace）** | 共用工作區（需手動切 git 分支） | **原生三模式**：`inherit`（共用）、`share`（Git worktree 獨立工作副本，免衝突平行修改）、`branch`（獨立 clone） | 共用工作區 | 工作區繼承（或各指令自訂目錄） |
+| **對話歷史分岔（Forking）** | 否（空白對話啟動） | **原生支援**（`fork: "coordinator"` 或指定成員，分岔延續既有上下文） | 否（空白對話） | 支援自訂 prompt 上下文注入 |
 
 ##### ② 各工具子代理設定檔範例
 
@@ -137,6 +140,25 @@
    - 具體 CLI 命令封裝於 `templates/skills/opencode-runner/SKILL.md`（預設帶入 `opencode/deepseek-v4.1-flash-free#high`），由安裝腳本自動派發至全域技能目錄；全域規則只保留觸發原則，將常駐 Prompt 消耗壓在 200 行以內。
 5. **受限環境（管制機）限制**：
    - 管制機禁止調用需要連線 OpenRouter 等外部商業 API 的模型，僅可使用本機或核准通道。
+
+##### ④ Antigravity 原生 Swarm 叢集與工作區隔離機制（2026-11-11 查證與實測）
+
+Antigravity 於 2026-11 推出最新原生 Swarm 叢集協作系統與工作區隔離機制，徹底解決了以往多子代理同時動工會互相覆蓋檔案與缺乏團隊視圖的痛點：
+
+1. **團隊協作與專屬角色分工（指令 `/teamwork`）**：
+   - **公共看板模式（Shared Message Board）**：所有代理人透過看板工具（`post_message`、`read_board`、`swarm_wait`）進行公開非同步通訊。
+   - **Coordinator（協調指揮官）**：主 Agent 不親自編寫程式碼，專責將任務拆分為互不衝突的切片（Brief），派發給各 Worker 並統籌進度與驗收。
+   - **Workers（任務工作者）**：各自分配在獨立對話中，僅根據 Brief 認領工作，完成後向看板回報 diff 摘要與測試驗證輸出。
+   - **Narrator（進度記錄員，`swarm_narrator`）**：只看不改，專門解析看板進展並即時更新 `view.json` / `view.html`，即時驅動 Antigravity 桌面/IDE 的 Swarm Overview 戰況面板。
+   - **Monitor（死結監控員，`swarm_monitor`）**：以背景定時任務（Cron，如每 3 分鐘）自動醒來巡檢，偵測是否所有 Worker 陷入互相等待的停擺（Stall），並主動在看板點名負責人推進破局。
+2. **工作區隔離防衝突（Workspace Modes）**：
+   - `inherit`（預設）：繼承當前主工作區，適用於唯讀搜尋、審查或單一修改。
+   - `share`（核心防碰撞）：底層採用類似 `git worktree` / Mercurial `hg share` 技術，為各寫程式碼的 Worker 分配獨立的工作目錄副本，允許多個 Worker 同時修改程式碼、編譯與跑測試，徹底根除檔案覆蓋衝突。
+   - `branch`（分支隔離）：建立完全獨立的隔離 clone，適合實驗性或高風險修改。
+3. **對話脈絡分岔（Conversation Forking）**：
+   - 派生子代理時可傳入 `fork: "coordinator"` 或其他成員名稱，直接繼承該成員先前的對話歷史與思考進度，銜接長流程任務時不必重複餵入前文背景。
+4. **事件驅動喚醒（Reactive Wakeup）**：
+   - 主代理與各 Worker 支援事件驅動喚醒，派工或掛上定時排程後無需在迴圈中輪詢（Polling），收到新訊息或背景任務結束時自動喚醒，零背景 Token 浪費。
 
 ### 2-3 強制執行與記憶
 
