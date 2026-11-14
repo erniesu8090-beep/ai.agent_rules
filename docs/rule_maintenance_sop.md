@@ -165,11 +165,11 @@ $t = "$env:TEMP\agentrules_test"
 Remove-Item -Recurse -Force $t -ErrorAction SilentlyContinue
 New-Item -ItemType Directory $t | Out-Null
 $env:USERPROFILE = $t
-cmd /c "install.bat controlled < nul"   # 預期：4 行 rules [OK] + 1 行 opencode.jsonc [OK] + 4 行 skills [OK]
-cmd /c "install.bat controlled < nul"   # 預期：5 行 rules/cfg [SKIP] + 4 行 skills [SKIP]
-cmd /c "install.bat dev < nul"          # 預期：4 組 [BACKUP]+[OK] + settings.json [OK] + opencode.jsonc [SKIP] + 4 行 skills [SKIP]
-cmd /c "install.bat dev < nul"          # 預期：6 行 rules/cfg [SKIP] + 4 行 skills [SKIP]
-cmd /c "install.bat general < nul"      # 預期：4 組 [BACKUP]+[OK] + settings.json [SKIP] + opencode.jsonc [SKIP] + 4 行 skills [SKIP]
+cmd /c "install.bat controlled < nul"   # 預期：4 行 rules [OK] + 1 行 opencode.jsonc [OK] +（若平行存在 ai.agent_skills）skills [OK]
+cmd /c "install.bat controlled < nul"   # 預期：5 行 rules/cfg [SKIP] + skills [SKIP]
+cmd /c "install.bat dev < nul"          # 預期：4 組 [BACKUP]+[OK] + settings.json [OK] + opencode.jsonc [SKIP] + skills [SKIP]
+cmd /c "install.bat dev < nul"          # 預期：6 行 rules/cfg [SKIP] + skills [SKIP]
+cmd /c "install.bat general < nul"      # 預期：4 組 [BACKUP]+[OK] + settings.json [SKIP] + opencode.jsonc [SKIP] + skills [SKIP]
 Get-Content "$t\.claude\CLAUDE.md" -Tail 1          # 預期：THIS MACHINE: general
 Get-Content "$t\.gemini\GEMINI.md" -Tail 1          # 預期：THIS MACHINE: general
 Get-Content "$t\.codex\AGENTS.md" -Tail 1           # 預期：THIS MACHINE: general

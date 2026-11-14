@@ -34,10 +34,17 @@
 23. 收錄 Three.js r170 現代 Web 3D 與互動檢視器技能（2026-11-08）：建立 `templates/skills/threejs/SKILL.md`，收錄最新繁中文件（r170）、現代 ES Module / Import Map 單檔架構、本地 3D 模型載入（GLTF/GLB 自適應相機視距）、材質光影與記憶體防洩漏（dispose）規範；同步納入四大 Agent 全域技能派發機制。
 24. 收錄 Gemini Web 網頁版免費額度生圖技能（`gemini-web-imagegen`）並列為生圖第三優先備援（2026-11-08）：建立 `templates/skills/gemini-web-imagegen/`（含 `SKILL.md` 與 `scripts/gemini_web_gen.py`），整合 `gemini-webapi` 2.x 與 Chromium CDP 無頭自動提取 `__Secure-1PSID`／`__Secure-1PSIDTS` 機制，支援跨專案 2K 文生圖與 Image-to-Image 改圖，並由安裝腳本統一派發至四大 Agent 全域技能目錄。
 25. 雙向融合 GitHub 遠端技能更新與管制機規則精簡版（2026-11-09）：合入 Google Flow、Three.js、Gemini Web 生圖三大通用技能；保留管制機 11/06 規則排版精簡成果（`global_rules.md` 67 行），合成後維持 113 行且無衝突完成同步。
-26. 技能全面解耦與雙庫分工定案（2026-11-10）：將 templates/skills/ 舊目錄徹底解耦移出（移入 _pending_delete/），Web 3D 技能 threejs 正式移入獨立技能母本庫 ai.agent_skills/project/threejs/；install.bat 與 install.sh 精簡並改為自動偵測連動呼叫 ai.agent_skills\deploy_global_skills，實現「規則掌管思想邊界、技能掌管外掛手腳」之乾淨對稱雙庫架構。
-27. 解決 `~/.gemini/GEMINI.md` 超過 Antigravity 24,000 bytes 單檔上限截斷尾端問題（2026-11-14）：在不刪減任何規則條目、實測結論與日期的前提下，精簡 `global_rules.md`（23,606 → 15,990 bytes，63 行）、`machine_rules/personal.md`（3,223 → 2,531 bytes，19 行）與 `machine_rules/controlled.md`（4,565 → 3,240 bytes，22 行），使 `home`／`dev` 合成後降至 18,546 bytes（84 行）、最長的 `controlled` 合成後降至 21,796 bytes（106 行），皆低於 24,000 bytes 上限，完整保留末尾 `THIS MACHINE` 標籤；同步將 `< 24,000 bytes` 檢查寫入 `AGENTS.md` 與 `docs/rule_maintenance_sop.md`。
+26. 規則與技能一致性盤點與清理（2026-11-09）：移除 `google-flow-bridge/SKILL.md` 硬編碼個人帳號路徑與 `gemini_web_gen.py`／`gemini-web-imagegen/SKILL.md` 的硬編碼磁碟代號，改為動態推算與檢查 `gemini_webapi` 套件；同步補齊 `coding_agent_features_table.md` 與 `verification_sources.md` 的生圖備援對照，並更新 `AGENTS.md`／`rule_maintenance_sop.md` 的技能安裝驗證預期行數（20 行 skills）。
+27. 技能全面解耦與雙庫分工定案（2026-11-10）：將 templates/skills/ 舊目錄徹底解耦移出（移入 _pending_delete/），Web 3D 技能 threejs 正式移入獨立技能母本庫 ai.agent_skills/project/threejs/；install.bat 與 install.sh 精簡並改為自動偵測連動呼叫 ai.agent_skills\deploy_global_skills，實現「規則掌管思想邊界、技能掌管外掛手腳」之乾淨對稱雙庫架構。
+28. 收錄 Antigravity 最新原生 Swarm 叢集協作與工作區隔離機制（2026-11-11）：於 `global_rules.md` 第 9 節補充多子代理平行修改時優先啟用工作區隔離（`share` / `branch`）原則與 Swarm 協作模式；於 `docs/coding_agent_features_table.md` 2-2-1 補齊 Antigravity 2026-11-11 最新 Swarm 架構（Coordinator/Workers/Narrator/Monitor 四大角色）、`/teamwork` 指令、Workspace `share`/`branch` 隔離機制與對話分岔 `fork` 規格。
+29. 前端 UI「去 AI 樣板味」美學規範入全域規則（2026-11-12）：經使用者確認採「美學規範入全域規則，重型套件留專案備用」架構，於 `global_rules.md` 第 7 節增補「前端網頁與介面美學（反 AI 套版味）」，禁止科技深藍與純白背景，明訂暖米白底色、石墨深炭灰、低對比邊框與機能邊條編碼；執行 `install.bat controlled` 完成全域派發至四大 Agent。
+30. 解決 `~/.gemini/GEMINI.md` 超過 Antigravity 24,000 bytes 單檔上限截斷尾端問題並雙向融合遠端規範（2026-11-14）：在不刪減任何規則條目、色票規格、實測結論與日期的前提下，精簡 `global_rules.md`、`machine_rules/personal.md` 與 `machine_rules/controlled.md`，並融合遠端 Swarm 隔離與前端 UI 美學規範，使 `home`／`dev` 與最長 `controlled` 合成後皆低於 24,000 bytes 且在 200 行內，完整保留末尾 `THIS MACHINE` 標籤；同步將 `< 24,000 bytes` 檢查寫入 `AGENTS.md` 與 `docs/rule_maintenance_sop.md`。
 
 ## 二、使用者已確認的事
+
+- **前端 UI「去 AI 味」採美學入全域規則、重型套件留專案架構（2026-11-12 使用者確認）**：使用者重視介面視覺去 AI 樣板感（避免科技深藍、純白與紫藍漸層，偏好工業儀表板式之暖米白底色、石墨深炭灰與機能性邊條）。定案將該核心美學與色票規範寫入 `global_rules.md` 第 7 節，使所有 Agent 在任何專案或隨手寫 HTML 時皆能零額外 Token 負擔直覺套用；而具備 Vite、shadcn/ui 與 Playwright 之完整大型套件 `ai.agent_skills/project/frontend-suite/` 仍維持專案專屬備用庫。
+
+- 收錄 Antigravity 最新 Swarm 叢集與工作區隔離機制（2026-11-11 使用者確認）：依 CS2680 兩層式收納原則，`global_rules.md` 僅輕量補充 1~2 行平行修改工作區隔離（`share` / `branch`）與 Swarm 協作原則，保持全域 200 行極簡；完整技術規格、四大角色與 `/teamwork` 記錄於 `docs/coding_agent_features_table.md`。
 
 - 收錄 Three.js 繁中文件與指引為通用技能（Skill）（2026-11-08）：依 CS2680 與「能不放全域就不放」原則，不寫入 `global_rules.md` 避免無關對話浪費 Token，採用通用技能 `templates/skills/threejs/SKILL.md`，在使用者提到「Three.js」、「Web 3D」、「WebGL 渲染」時才觸發，並由安裝腳本統一派發至四大 Agent 全域技能目錄。
 
@@ -192,4 +199,8 @@
 | 2026-11-07 | 住家開發機 | 打包與分發 Google Flow 技能（templates/skills/google-flow-bridge/SKILL.md）至四大 Agent 技能庫，支援 Nano Banana 2K 生圖、Veo 720p 生片、Extend 與 Storyboard |
 | 2026-11-08 | 住家開發機 | 收錄 Three.js r170 技能（templates/skills/threejs/SKILL.md）與 Gemini Web 網頁版免費額度生圖技能（templates/skills/gemini-web-imagegen/），更新 global_rules 與 README 將 Gemini Web 列為生圖第三優先備援並派發至四大 Agent 全域技能庫 |
 | 2026-11-09 | 管制機 | 雙向融合遠端 GitHub 11/07～11/08 新增技能（Google Flow、Three.js、Gemini Web 生圖）與管制機 11/06 規則精簡版，排除衝突完成同步並執行安裝腳本驗證 |
-| 2026-11-14 | 住家開發機 | 精簡 `global_rules.md`（15,990B）、`personal.md`（2,531B）與 `controlled.md`（3,240B）文字密度（零刪減規則與實測日期），使 `home`/`dev` 合成降至 18,546B、`controlled` 合成降至 21,796B，徹底解決 Antigravity `~/.gemini/GEMINI.md` 超過 24,000 bytes 截斷尾端問題；於 `AGENTS.md` 與 `docs/rule_maintenance_sop.md` 補入 `< 24,000 bytes` 驗證標準並部署至本機 |
+| 2026-11-09 | 管制機 | 完成全專案規則與通用技能一致性檢視與 5 項清理：移除技能內個人帳號與磁碟硬編碼、強化 `gemini-webapi` 環境偵測、補齊對照表與查證來源總表、更新技能驗證預期行數 |
+| 2026-11-10 | 住家開發機 | 將技能母本徹底解耦移往獨立倉庫 ai.agent_skills，精簡 install.bat 與 install.sh 為自動連動部署，確立雙庫乾淨對稱分工 |
+| 2026-11-11 | 住家開發機 | 收錄 Antigravity 最新原生 Swarm 叢集協作、工作區副本隔離（share/branch）與對話分岔（fork）機制（global_rules、對照表、PROGRESS） |
+| 2026-11-12 | 管制機 | 前端 UI 採「美學規範入全域規則，重型套件留專案備用」架構，於 global_rules.md 第 7 節增補「前端網頁與介面美學（反 AI 套版味）」，禁止科技深藍與純白背景，明訂暖米白底色、石墨深炭灰、低對比邊框與機能邊條編碼；執行 install.bat controlled 完成四大 Agent 全域派發 |
+| 2026-11-14 | 住家開發機 | 精簡 `global_rules.md`、`personal.md` 與 `controlled.md` 文字密度並雙向融合遠端 Swarm 與前端 UI 美學規範，使 `home`/`dev` 與最長 `controlled` 合成皆維持 < 24,000 bytes（解決 Antigravity 截斷尾端問題）；補齊 `AGENTS.md` 與 SOP 位元組檢查並部署至本機 |
