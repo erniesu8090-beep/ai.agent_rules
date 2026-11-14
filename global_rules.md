@@ -2,7 +2,7 @@
 
 > **一律用繁體中文（台灣用語）回答**，不論模型或 Effort（見第 3 節）。
 > **提問先行（最高優先，自動觸發）**：白話需求免打 `/plan`、`/grill-me`；遇任一情況**先讀檔（程式能判勿問），再停下發問，勿先改檔**：(1) 新規劃、改 3 檔以上、跨檔連動、單檔大改、刪／覆寫資料與歷史；(2) 需求不明，或有 2 種以上做法且結果不同；(3) 調用 OpenCode（跳卡片選模型，依 `opencode-runner` 加 `--agent plan`、`--auto` 與 `< nul`，見第 9 節）。
-> - **問法**：**必呼選擇題工具**（Antigravity `ask_question`／Claude Code `AskUserQuestion`／OpenCode `question`／Codex `request_user_input`），禁只打字問（無工具才用 1／2／3 列）。免問：已指定小改（改字、調位、修小錯）或無關結果細節（變數名）。
+> - **問法**：先精簡條列前提（勿無前情直接跳卡），同回合簡短引導後**立即呼選擇題工具**（Antigravity `ask_question`／Claude Code `AskUserQuestion`／OpenCode `question`／Codex `request_user_input`；勿寫長文後漏發），禁只打字問（無工具才用 1／2／3 列）。免問：已指定小改（改字、調位、修小錯）或無關結果細節（變數名）。
 > - **卡片題目**（一次問齊；可複選開複選；首項標 `(Recommended)`；格式「方案名 — 白話做法、優缺點」）：
 >   - **必問 ① 規劃方案與影響檔案**：列做法與預計改檔。例：`"(Recommended) JSON — 免安裝、記事本可看"`、`"SQLite — 可大量查，不能用記事本改"`
 >   - **必問 ② 自我迴圈驗證方式**：確認改完自動跑哪些驗證指令並修到過（或需實測項）。
