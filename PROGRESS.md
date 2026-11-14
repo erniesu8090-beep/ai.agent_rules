@@ -1,6 +1,6 @@
 # PROGRESS　進度與交接
 
-> 最後更新：2026-11-10（住家開發機）
+> 最後更新：2026-11-14（住家開發機）
 > 新對話接手：先讀 `AGENTS.md` → 本檔 → `README.md`「三、檔案總覽」
 
 ## 一、目前階段
@@ -35,6 +35,7 @@
 24. 收錄 Gemini Web 網頁版免費額度生圖技能（`gemini-web-imagegen`）並列為生圖第三優先備援（2026-11-08）：建立 `templates/skills/gemini-web-imagegen/`（含 `SKILL.md` 與 `scripts/gemini_web_gen.py`），整合 `gemini-webapi` 2.x 與 Chromium CDP 無頭自動提取 `__Secure-1PSID`／`__Secure-1PSIDTS` 機制，支援跨專案 2K 文生圖與 Image-to-Image 改圖，並由安裝腳本統一派發至四大 Agent 全域技能目錄。
 25. 雙向融合 GitHub 遠端技能更新與管制機規則精簡版（2026-11-09）：合入 Google Flow、Three.js、Gemini Web 生圖三大通用技能；保留管制機 11/06 規則排版精簡成果（`global_rules.md` 67 行），合成後維持 113 行且無衝突完成同步。
 26. 技能全面解耦與雙庫分工定案（2026-11-10）：將 templates/skills/ 舊目錄徹底解耦移出（移入 _pending_delete/），Web 3D 技能 threejs 正式移入獨立技能母本庫 ai.agent_skills/project/threejs/；install.bat 與 install.sh 精簡並改為自動偵測連動呼叫 ai.agent_skills\deploy_global_skills，實現「規則掌管思想邊界、技能掌管外掛手腳」之乾淨對稱雙庫架構。
+27. 解決 `~/.gemini/GEMINI.md` 超過 Antigravity 24,000 bytes 單檔上限截斷尾端問題（2026-11-14）：在不刪減任何規則條目、實測結論與日期的前提下，精簡 `global_rules.md`（23,606 → 15,990 bytes，63 行）、`machine_rules/personal.md`（3,223 → 2,531 bytes，19 行）與 `machine_rules/controlled.md`（4,565 → 3,240 bytes，22 行），使 `home`／`dev` 合成後降至 18,546 bytes（84 行）、最長的 `controlled` 合成後降至 21,796 bytes（106 行），皆低於 24,000 bytes 上限，完整保留末尾 `THIS MACHINE` 標籤；同步將 `< 24,000 bytes` 檢查寫入 `AGENTS.md` 與 `docs/rule_maintenance_sop.md`。
 
 ## 二、使用者已確認的事
 
@@ -191,3 +192,4 @@
 | 2026-11-07 | 住家開發機 | 打包與分發 Google Flow 技能（templates/skills/google-flow-bridge/SKILL.md）至四大 Agent 技能庫，支援 Nano Banana 2K 生圖、Veo 720p 生片、Extend 與 Storyboard |
 | 2026-11-08 | 住家開發機 | 收錄 Three.js r170 技能（templates/skills/threejs/SKILL.md）與 Gemini Web 網頁版免費額度生圖技能（templates/skills/gemini-web-imagegen/），更新 global_rules 與 README 將 Gemini Web 列為生圖第三優先備援並派發至四大 Agent 全域技能庫 |
 | 2026-11-09 | 管制機 | 雙向融合遠端 GitHub 11/07～11/08 新增技能（Google Flow、Three.js、Gemini Web 生圖）與管制機 11/06 規則精簡版，排除衝突完成同步並執行安裝腳本驗證 |
+| 2026-11-14 | 住家開發機 | 精簡 `global_rules.md`（15,990B）、`personal.md`（2,531B）與 `controlled.md`（3,240B）文字密度（零刪減規則與實測日期），使 `home`/`dev` 合成降至 18,546B、`controlled` 合成降至 21,796B，徹底解決 Antigravity `~/.gemini/GEMINI.md` 超過 24,000 bytes 截斷尾端問題；於 `AGENTS.md` 與 `docs/rule_maintenance_sop.md` 補入 `< 24,000 bytes` 驗證標準並部署至本機 |

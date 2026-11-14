@@ -32,7 +32,7 @@
 
 ## 撰寫規則的原則（依 Harvard CS2680 課程重點，2026-10-15）
 
-- 全域規則每次對話都整份載入：`global_rules.md` 維持 200 行以內；新增前先問「這條是不是每次對話都需要」。
+- 全域規則每次對話都整份載入：`global_rules.md` 以及最長的 `controlled` 合成後規則皆維持 200 行以內且小於 24,000 bytes（Antigravity 單檔載入上限，見 `docs/coding_agent_features_table.md`）；新增前先問「這條是不是每次對話都需要」。
 - 只在特定情境用到的內容，放到那個情境才會讀的地方：公司專案 → `templates/AGENTS_company.md`；逆向分析專案 → `templates/AGENTS_reverse.md`；只有某台電腦 → `machine_rules/`；查表、清單、操作步驟 → `README.md`。
 - 該寫：硬性限制、AI 自己推斷不出來的事實（實測結果、踩過的坑，附日期）。不該寫：程式語言常識、長篇說明、機密。
 - 規則要具體可執行（寫「做什麼、不做什麼」），不寫「盡量」「注意」這類無法判斷是否做到的話。
@@ -70,4 +70,4 @@
    Remove-Item -Recurse -Force $t
    ```
 3. `install.bat` 沒有非 ASCII 字元：`grep -nP '[^\x00-\x7F]' install.bat` 沒有輸出。
-4. 行數：`global_rules.md` 以及最長的 `controlled` 合成後規則皆不超過 200 行（PowerShell：`(Get-Content global_rules.md -Encoding UTF8).Count`，一定要加 `-Encoding UTF8`，否則 PowerShell 5.1 用 Big5 讀檔，行數會算錯；Git Bash：`wc -l global_rules.md`）；超過時先精簡或搬移，再提交。
+4. 行數與位元組數：`global_rules.md` 以及最長的 `controlled` 合成後規則皆不超過 200 行，且檔案大小必須小於 24,000 bytes（防止 Antigravity `~/.gemini/GEMINI.md` 超過 24,000 bytes 單檔上限而截斷尾端 `machine_rules/` 與 `THIS MACHINE` 標籤；PowerShell：`(Get-Content global_rules.md -Encoding UTF8).Count`，一定要加 `-Encoding UTF8`，否則 PowerShell 5.1 用 Big5 讀檔，行數會算錯；位元組數檢查：`(Get-Item "$t\.gemini\GEMINI.md").Length` 預期 `< 24000`；Git Bash：`wc -lc global_rules.md`）；超過時先精簡或搬移，再提交。

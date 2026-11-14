@@ -153,9 +153,10 @@ grep -rnE '\\\\[A-Za-z0-9]|([0-9]{1,3}\.){3}[0-9]{1,3}|[0-9]{6}' --exclude-dir=.
 grep -nP '[^\x00-\x7F]' install.bat
 # 預期：沒有輸出
 
-# 3. 全域規則與合成後行數
+# 3. 全域規則與合成後行數及位元組數（Antigravity 單檔上限 24,000 bytes）
 (Get-Content global_rules.md -Encoding UTF8).Count
-# 預期：global_rules.md 與最長的 controlled 合成後皆 ≤ 200
+(Get-Item global_rules.md).Length + (Get-Item machine_rules\personal.md).Length + (Get-Item machine_rules\controlled.md).Length + 35
+# 預期：global_rules.md 與最長的 controlled 合成後皆 ≤ 200 行，且合成總大小 < 24,000 bytes
 ```
 
 ```powershell
