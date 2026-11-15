@@ -206,3 +206,4 @@
 | 2026-11-14 | 住家開發機 | 精簡 `global_rules.md`、`personal.md` 與 `controlled.md` 文字密度並雙向融合遠端 Swarm 與前端 UI 美學規範，使 `home`/`dev` 與最長 `controlled` 合成皆維持 < 24,000 bytes（解決 Antigravity 截斷尾端問題）；補齊 `AGENTS.md` 與 SOP 位元組檢查並部署至本機 |
 | 2026-11-14 | 住家開發機 | 比對 `Downloads\global_rules.md` 後於 `global_rules.md` 第 5 行「問法」補入先精簡交代前提、同回合立即發卡防漏發約束，通過 4 項驗證並更新本機（`install.bat home`） |
 | 2026-11-15 | 住家開發機 | 針對實測仍漏發圖卡問題，精準改寫 `global_rules.md` 第 5 行「問法」：禁寫「請確認以下…：」等等待結尾句、明訂即使單一推薦方案亦須發卡、收緊純文字替代退路，並通過全部 4 項驗證 |
+| 2026-11-15 | 住家開發機 | 比對 `Downloads\global_rules.md` 後於 `global_rules.md` 補入「勿無前情跳卡」、「勿寫長文致漏發」及 Antigravity「展開提示（`Worked for ... >`）」規範，通過全部 4 項驗證並更新本機（`install.bat home`） |
