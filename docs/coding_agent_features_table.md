@@ -168,7 +168,7 @@ Antigravity 於 2026-11 推出最新原生 Swarm 叢集協作系統與工作區�
 | 拒絕讀取特定路徑 | `settings.json` 的 `permissions.deny`（例：`Read(./**/<資料夾>/**)`，相對路徑以啟動資料夾為起點；跨資料夾可能需改用 `//` 絕對路徑，⚠ 尚待實測），只擋內建讀檔工具（對 Bash 繞道效力有限）；`.claudeignore` 於 2026-10-22 實測無效 | — | —（沙盒管寫入範圍，無宣告式讀檔黑名單） | `opencode.jsonc` 的 `permissions`：`{action:"read", resource:"*<資料夾>*", effect:"deny"}`（`*` 會跨 `/`）；`external_directory` 可管工作區外的路徑 | 2026-10-28 |
 | 自動記憶 | `~/.claude/projects/<專案>/memory/MEMORY.md`（前 200 行／25KB 自動載入；只存使用者資訊、被糾正的回饋、專案背景、外部參照，除錯修法通常不存；只存該機器，不隨 Git 同步） | —（無背景自動記憶；僅手動 `/learn`，先提案、核准後寫入） | `~/.codex/memories_*.sqlite` | —（無背景自動記憶） | 2026-10-28 |
 | 附加系統提示 | `--append-system-prompt` | — | `-c developer_instructions=...` | agent 的 `system` 欄位（會取代該 agent 的基礎系統提示） | 2026-10-28 |
-| 互動式選擇題卡片 | `AskUserQuestion`（⚠ v2.0.21+ 為第三方來源；原生單選、複選 `multiSelect`、自由填寫；選項分 `label` 與 `description`） | `ask_question`（官方確認支援單選、複選 `is_multi_select`、自動附自由填寫；本機實測 `options` 為單一字串陣列，做法與優缺點要寫在同一字串） | `request_user_input`（預設於 Plan mode 啟用；一般模式需設 `[features] default_mode_request_user_input = true`） | `question`（原生單選／複選／自由填寫；選項有 `label` 與 `description`） | 2026-10-28 |
+| 互動式選擇題卡片 | `AskUserQuestion`（⚠ v2.0.21+ 為第三方來源；原生單選、複選 `multiSelect`、自由填寫；選項分 `label` 與 `description`） | `ask_question`（官方確認支援單選、複選 `is_multi_select`、自動附自由填寫；本機實測 `options` 為單一字串陣列，做法與優缺點要寫在同一字串） | `request_user_input`（預設於 Plan mode 啟用；一般模式需設 `[features] default_mode_request_user_input = true`，由安裝腳本設定） | `question`（原生單選／複選／自由填寫；選項有 `label` 與 `description`） | 2026-11-20 |
 
 ---
 
@@ -215,7 +215,7 @@ Antigravity 於 2026-11 推出最新原生 Swarm 叢集協作系統與工作區�
 
 | 落差 | Claude Code（基準） | 其他 agent 常見表現 | 補強做法（免記指令，全靠提問卡片與規則） |
 |---|---|---|---|
-| 主動提問與規劃 | 動手前跳選擇題卡片，先給計畫等核准 | 直接改檔，或只在對話裡問一句 | 規則開頭強制點名工具（`ask_question`／`AskUserQuestion`／`question`／`request_user_input`）：新規劃、修改 3 檔以上、跨檔案、單檔大改或有 2 種做法時，必跳卡片確認「① 規劃方案與影響檔案」 |
+| 主動提問與規劃 | 動手前跳選擇題卡片，先給計畫等核准 | 直接改檔，或只在對話裡問一句 | 規則開頭改為獨立「動手前硬門檻（未跳圖卡禁寫／改／刪檔）」：收緊免問為明確白名單、禁止「自認小改／只有一種解法」跳過，並規定有引導就必在同回合發出工具呼叫（`ask_question`／`AskUserQuestion`／`question`／`request_user_input`）；Codex 一般模式由安裝腳本啟用 `default_mode_request_user_input` |
 | 選項品質 | 標題＋說明＋優缺點 | 只有簡短名詞，缺決策資訊 | 固定選項格式：首項標 `(Recommended)`，每項寫「方案 — 白話做法、優缺點」 |
 | 自我迴圈驗證 | 會主動跑測試並修到過 | 傾向「看起來完成」就交差 | 提問卡片必問「② 自我迴圈驗證方式」；任務開頭寫驗收標準，改完自動跑驗證修到過（最多兩次）並附輸出 |
 | 子代理調度 | 大任務適時分工或獨立審查 | 不主動派，或亂派小任務浪費額度 | AI 先判斷任務是否合適（大範圍搜尋、平行改獨立檔、改完唯讀挑錯），合適時在卡片動態加問「③ 是否派子代理」；不合適時不問 |

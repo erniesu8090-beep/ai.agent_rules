@@ -143,6 +143,7 @@ flowchart TB
   ```
   - **外掛 ID 設定**：上方範本同時寫入新舊兩種外掛 ID 以相容各版本（版本分界與查證依據見對照表第二節）；亦可直接在 Claude Code 執行 `/config`（把「Project instructions」改成 `claude-md-and-agents-md`）設定。
   - **阻擋路徑注意**：`permissions.deny` 的 `./` 相對路徑是以「啟動 Claude Code 時所在的資料夾」為起點（非倉庫根目錄），跨資料夾啟動時的保護效果尚待實測；若實測擋不住，評估改用 `//` 絕對路徑（尚待實測）。請勿在含敏感專案的上層目錄啟動 Claude Code；設定後可執行 `/permissions` 確認。管制機沒有 Claude Code，不設定。
+- 開發機與通用機（home、dev、general）另外設定 Codex **一般模式啟用互動提問卡片**：`~/.codex/config.toml` 不存在時建立；已存在但未啟用 `default_mode_request_user_input = true` 時，若偵測到 `codex` CLI 則先備份再執行 `codex features enable default_mode_request_user_input` 安全補上（無 CLI 時顯示 `[WARN]` 請手動補入 `[features]`）。管制機沒有 Codex，不設定。
 - OpenCode 另外建立 `~/.config/opencode/opencode.jsonc`（不存在才建立；已存在只檢查，缺少設定時顯示 `[WARN]`）。Windows 寫入的路徑是 `D:/AI_Workspace/AGENTS.md`，Linux／macOS 是 `~/AI_Workspace/AGENTS.md`：
   ```jsonc
   {

@@ -1,6 +1,6 @@
 # PROGRESS　進度與交接
 
-> 最後更新：2026-11-15（住家開發機）
+> 最後更新：2026-11-20（住家開發機）
 > 新對話接手：先讀 `AGENTS.md` → 本檔 → `README.md`「三、檔案總覽」
 
 ## 一、目前階段
@@ -39,6 +39,7 @@
 28. 收錄 Antigravity 最新原生 Swarm 叢集協作與工作區隔離機制（2026-11-11）：於 `global_rules.md` 第 9 節補充多子代理平行修改時優先啟用工作區隔離（`share` / `branch`）原則與 Swarm 協作模式；於 `docs/coding_agent_features_table.md` 2-2-1 補齊 Antigravity 2026-11-11 最新 Swarm 架構（Coordinator/Workers/Narrator/Monitor 四大角色）、`/teamwork` 指令、Workspace `share`/`branch` 隔離機制與對話分岔 `fork` 規格。
 29. 前端 UI「去 AI 樣板味」美學規範入全域規則（2026-11-12）：經使用者確認採「美學規範入全域規則，重型套件留專案備用」架構，於 `global_rules.md` 第 7 節增補「前端網頁與介面美學（反 AI 套版味）」，禁止科技深藍與純白背景，明訂暖米白底色、石墨深炭灰、低對比邊框與機能邊條編碼；執行 `install.bat controlled` 完成全域派發至四大 Agent。
 30. 解決 `~/.gemini/GEMINI.md` 超過 Antigravity 24,000 bytes 單檔上限截斷尾端問題並雙向融合遠端規範（2026-11-14）：在不刪減任何規則條目、色票規格、實測結論與日期的前提下，精簡 `global_rules.md`、`machine_rules/personal.md` 與 `machine_rules/controlled.md`，並融合遠端 Swarm 隔離與前端 UI 美學規範，使 `home`／`dev` 與最長 `controlled` 合成後皆低於 24,000 bytes 且在 200 行內，完整保留末尾 `THIS MACHINE` 標籤；同步將 `< 24,000 bytes` 檢查寫入 `AGENTS.md` 與 `docs/rule_maintenance_sop.md`。
+31. 針對實測仍常漏發圖卡問題，重構 `global_rules.md` 開頭並補齊 Codex 圖卡設定（2026-11-20）：將原本擠在 `>` 引用塊的長段落拆成獨立 `## 動手前硬門檻（未跳圖卡確認，禁先寫／改／刪檔）` 小節、將「免問」改為嚴格白名單（禁腦補「算小改／只有一種解法」跳過）、強制「有引導就必在同回合發出選擇題 Tool Call」；同時實測確認本機 `~/.codex/config.toml` 缺 `default_mode_request_user_input = true`，於 `install.bat` 與 `install.sh`（非管制機）新增自動建立／安全補齊設定，同步更新 `AGENTS.md`、`README.md` 與 `docs/coding_agent_features_table.md`。
 
 ## 二、使用者已確認的事
 
@@ -207,3 +208,4 @@
 | 2026-11-14 | 住家開發機 | 比對 `Downloads\global_rules.md` 後於 `global_rules.md` 第 5 行「問法」補入先精簡交代前提、同回合立即發卡防漏發約束，通過 4 項驗證並更新本機（`install.bat home`） |
 | 2026-11-15 | 住家開發機 | 針對實測仍漏發圖卡問題，精準改寫 `global_rules.md` 第 5 行「問法」：禁寫「請確認以下…：」等等待結尾句、明訂即使單一推薦方案亦須發卡、收緊純文字替代退路，並通過全部 4 項驗證 |
 | 2026-11-15 | 住家開發機 | 比對 `Downloads\global_rules.md` 後於 `global_rules.md` 補入「勿無前情跳卡」、「勿寫長文致漏發」及 Antigravity「展開提示（`Worked for ... >`）」規範，通過全部 4 項驗證並更新本機（`install.bat home`） |
+| 2026-11-20 | 住家開發機 | 重構 `global_rules.md` 開頭為獨立「動手前硬門檻」並強制同回合發出選擇題 Tool Call、收緊免問白名單；`install.bat`／`install.sh`（非管制機）新增 Codex `config.toml` 一般模式 `default_mode_request_user_input = true` 設定，通過全部 4 項驗證並更新本機（`install.bat home`） |

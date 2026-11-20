@@ -5,7 +5,7 @@
 #     -> ~/.gemini/GEMINI.md（Antigravity）
 #     -> ~/.codex/AGENTS.md（Codex）
 #     -> ~/.config/opencode/AGENTS.md（OpenCode）
-# 開發機／通用機（home／dev／general）另外設定 Claude Code 同時讀 CLAUDE.md 與 AGENTS.md（~/.claude/settings.json，不存在才建立）
+# 開發機／通用機（home／dev／general）另外設定 Claude Code 同時讀 CLAUDE.md 與 AGENTS.md（~/.claude/settings.json，不存在才建立），並啟用 Codex 一般模式提問卡片（~/.codex/config.toml）
 # OpenCode 全域設定 ~/.config/opencode/opencode.jsonc（不存在才建立）
 # 既有檔案會先備份成 *.YYYYMMDD_HHMMSS.bak
 # 用法：sh install.sh [home|dev|controlled|general]（不帶參數則詢問）
@@ -148,6 +148,28 @@ JSON
 JSON
         fi
         echo "[OK] $cfg"
+    fi
+
+    # Codex 全域設定：一般模式啟用 request_user_input 圖卡
+    ccfg="$HOME/.codex/config.toml"
+    if [ ! -f "$ccfg" ]; then
+        cat > "$ccfg" <<'TOML'
+[features]
+default_mode_request_user_input = true
+TOML
+        echo "[OK] $ccfg"
+    elif grep -Eq '^[[:space:]]*default_mode_request_user_input[[:space:]]*=[[:space:]]*true' "$ccfg"; then
+        echo "[SKIP] $ccfg 已設定完成"
+    elif command -v codex >/dev/null 2>&1; then
+        cp "$ccfg" "$ccfg.$ts.bak"
+        echo "[BACKUP] $ccfg.$ts.bak"
+        if CODEX_HOME="$HOME/.codex" codex features enable default_mode_request_user_input </dev/null >/dev/null 2>&1; then
+            echo "[OK] $ccfg"
+        else
+            echo "[WARN] $ccfg 自動更新失敗，請照 README 手動加入 [features] default_mode_request_user_input = true"
+        fi
+    else
+        echo "[WARN] $ccfg 已存在，請照 README 手動加入 [features] default_mode_request_user_input = true"
     fi
 fi
 

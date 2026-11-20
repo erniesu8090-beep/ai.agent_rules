@@ -7,6 +7,7 @@ rem     -> %USERPROFILE%\.codex\AGENTS.md         (Codex)
 rem     -> %USERPROFILE%\.config\opencode\AGENTS.md (OpenCode)
 rem Dev/General PCs (home/dev/general): also make Claude Code read both CLAUDE.md and AGENTS.md
 rem   (%USERPROFILE%\.claude\settings.json, only created if missing)
+rem   and enable Codex default-mode request_user_input (%USERPROFILE%\.codex\config.toml)
 rem OpenCode: global config %USERPROFILE%\.config\opencode\opencode.jsonc (only created if missing)
 rem Existing files are backed up as *.YYYYMMDD_HHMMSS.bak before overwrite.
 rem Usage: install.bat [home|dev|controlled|general]   (no argument = ask)
@@ -58,6 +59,7 @@ call :install "%USERPROFILE%\.gemini" "GEMINI.md" || goto :fail
 call :install "%USERPROFILE%\.codex" "AGENTS.md" || goto :fail
 call :install "%USERPROFILE%\.config\opencode" "AGENTS.md" || goto :fail
 if /i not "%MACHINE%"=="controlled" call :settings || goto :fail
+if /i not "%MACHINE%"=="controlled" call :codexcfg || goto :fail
 call :opencodecfg || goto :fail
 call :trigger_skills_deploy
 del "%SRC%" >nul 2>&1
@@ -124,6 +126,33 @@ if /i not "%MACHINE%"=="general" (
 >>"%CFG%" echo   }
 >>"%CFG%" echo }
 echo [OK] %CFG%
+exit /b 0
+
+:codexcfg
+rem Codex: enable request_user_input in default mode (~/.codex/config.toml)
+set "CCFG=%USERPROFILE%\.codex\config.toml"
+if not exist "%CCFG%" (
+    >"%CCFG%" echo [features]
+    >>"%CCFG%" echo default_mode_request_user_input = true
+    echo [OK] %CCFG%
+    exit /b 0
+)
+findstr /r /c:"default_mode_request_user_input *= *true" "%CCFG%" >nul && (
+    echo [SKIP] %CCFG% already configured.
+    exit /b 0
+)
+where codex >nul 2>&1 || (
+    echo [WARN] %CCFG% exists. Add [features] default_mode_request_user_input = true manually, see README.
+    exit /b 0
+)
+copy /y "%CCFG%" "%CCFG%.%TS%.bak" >nul || exit /b 1
+echo [BACKUP] %CCFG%.%TS%.bak
+set "CODEX_HOME=%USERPROFILE%\.codex"
+cmd /c "codex features enable default_mode_request_user_input < nul" >nul 2>&1 && (
+    echo [OK] %CCFG%
+    exit /b 0
+)
+echo [WARN] %CCFG% update failed. Add [features] default_mode_request_user_input = true manually, see README.
 exit /b 0
 
 :opencodecfg
