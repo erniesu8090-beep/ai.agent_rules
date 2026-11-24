@@ -289,27 +289,14 @@ flowchart LR
 > **桌面工具完工收納與操作手冊補充**：
 > 交付他人操作或定時執行的桌面工具完工時，根目錄僅保留啟動捷徑／入口、圖文操作手冊 PDF（`<工具名稱>_操作手冊.pdf`，以無頭瀏覽器將 HTML 介面圖步驟匯出成向量 PDF）與各分類資料夾；`AGENTS.md` 留在根目錄（內文指向 `docs/PROGRESS.md`）並以 `attrib +h AGENTS.md` 設為隱藏，確保各家 AI 自動讀取且檔案總管預設不干擾操作。
 
-### AI 生圖規範（Codex `$imagegen` 優先，Gemini 次之）
+### AI 生圖規範（Antigravity 優先，Gemini Web 次之，Codex 付費備援）
 
 全域規則第 9 節指向這裡。專案需要生成點陣圖素材（插畫、背景、圖示、概念圖等）時，**嚴格依照以下優先順序**：
 
-> **管制機連線限制（2026-10-27 實測）**：管制機外網目前無法連線至 OpenAI / Codex 生圖服務。在管制機上若需要生圖，請直接切換至第二優先的 Antigravity `image-generator` 子代理，或在住家／公司開發機產圖後經 GitSync `.bundle` 帶過來。
+> **Codex 免費方案限制（2026-11-24 實測）**：免費版 ChatGPT 帳號在 Codex 工作階段不會掛載內建 `image_gen` 工具，僅 Plus／Pro 付費方案可用。
+> **管制機連線限制（2026-10-27 實測）**：管制機外網無法連線至 OpenAI / Codex 生圖服務；在管制機上請一律走第一優先的 Antigravity `image-generator` 子代理，或在住家／公司開發機產圖後經 GitSync `.bundle` 帶過來。
 
-1. **第一優先：Codex 內建 `$imagegen`（免 API Key，走 ChatGPT 登入額度）**
-   - 在 **Codex** 內：直接呼叫內建 `image_gen`（`$imagegen`）工具。
-   - 在 **Antigravity、Claude Code、OpenCode** 內：透過 `codex-imagegen-bridge` 技能，由 PowerShell 呼叫本機 `codex exec` 執行 `$imagegen`：
-     1. 先確認 `Get-Command codex` 存在，且 `codex login status` 為 ChatGPT 登入（不可讀取或印出 `%USERPROFILE%\.codex\auth.json`）。
-     2. 建立輸出目錄（預設 `assets/generated/`，不覆寫既有檔案），執行：
-        ```powershell
-        $project = (Get-Location).Path
-        $target = Join-Path $project 'assets\generated\image-name.png'
-        New-Item -ItemType Directory -Force -Path (Split-Path -Parent $target) | Out-Null
-        $prompt = '$imagegen Generate: [描述畫面、風格、構圖與限制]. Save or copy the final PNG to ' + $target + '. Do not use an API key or API fallback.'
-        codex exec --skip-git-repo-check --sandbox workspace-write --cd $project $prompt
-        ```
-     3. 確認目標路徑的圖檔已產生且可讀取。
-2. **第二優先：Antigravity 內建 `gemini-3.1-flash-image`（或更高版本，免 API Key，走 Antigravity 登入額度）**
-   - 當本機無法使用 Codex CLI bridge，或使用者指定使用 Gemini 生圖時採用。
+1. **第一優先：Antigravity 內建 `gemini-3.1-flash-image`（或更高版本，免 API Key，走 Antigravity 登入額度）**
    - 在 **Antigravity** 內：直接呼叫內建 `invoke_subagent(TypeName="image-generator", ...)` 子代理，再將產出的圖片複製或轉存至 `assets/generated/`。
    - 在 **Claude Code、Codex、OpenCode** 內：透過 `agy-imagegen-bridge` 技能，由 PowerShell 呼叫本機 `agy -p`（2026-10-25 實測確認：讓 `agy -p` 單純呼叫 `image-generator` 子代理，圖片會自動存入 `%USERPROFILE%\.gemini\antigravity-cli\brain\<對話ID>\`，再由外層 PowerShell 取最新圖檔轉存至專案，完全不會卡在 `agy` 內部的終端機權限確認）：
      ```powershell
@@ -334,16 +321,30 @@ flowchart LR
          Copy-Item -LiteralPath $genFile.FullName -Destination $target -Force
      }
      ```
-3. **第三優先（備援或指名）：Gemini 網頁版免費額度 `gemini-web-imagegen`（免 API Key，走 `gemini.google.com` 網頁端 Cookie 額度）**
-   - 當第一優先（Codex）與第二優先（Antigravity 內建生圖）因密集生成約 12～20 張觸發 `429 RESOURCE_EXHAUSTED`（約 4～5 小時冷卻）時，或使用者指定「用 Gemini 網頁版生圖」時採用。
+2. **第二優先（備援或指名）：Gemini 網頁版免費額度 `gemini-web-imagegen`（免 API Key，走 `gemini.google.com` 網頁端 Cookie 額度）**
+   - 當第一優先（Antigravity 內建生圖）因密集生成約 12～20 張觸發 `429 RESOURCE_EXHAUSTED`（約 4～5 小時冷卻）時，或使用者指定「用 Gemini 網頁版生圖」時採用。
    - 透過全域技能 `gemini-web-imagegen` 內附之 `scripts/gemini_web_gen.py`（基於 `gemini-webapi >= 2.1.1`），自動從本機已登入之 Chromium/Edge 設定檔以 CDP 無頭提取 `__Secure-1PSID` 與 `__Secure-1PSIDTS`（免手動按 F12），直接向 `gemini.google.com` 發送生圖或參考圖改圖請求並自動補償至 2K（2560×1440 / 2048px）畫質。
+3. **第三優先（僅限 ChatGPT Plus／Pro 付費帳號）：Codex 內建 `$imagegen`（免 API Key，走付費 ChatGPT 登入額度）**
+   - 免費版 ChatGPT 帳號與管制機皆不可用；僅限已訂閱 ChatGPT Plus／Pro 的開發機作為備援或指名使用。
+   - 在 **Codex** 內：直接呼叫內建 `image_gen`（`$imagegen`）工具。
+   - 在 **Antigravity、Claude Code、OpenCode** 內：透過 `codex-imagegen-bridge` 技能，由 PowerShell 呼叫本機 `codex exec` 執行 `$imagegen`（以 `-` 透過 stdin 管線傳入避免卡死與引號切分）：
+     1. 先確認 `Get-Command codex` 存在，且 `codex login status` 為 ChatGPT 登入（不可讀取或印出 `%USERPROFILE%\.codex\auth.json`）。
+     2. 建立輸出目錄（預設 `assets/generated/`，不覆寫既有檔案），執行：
+        ```powershell
+        $OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+        $project = (Get-Location).Path
+        $target = Join-Path $project 'assets\generated\image-name.png'
+        New-Item -ItemType Directory -Force -Path (Split-Path -Parent $target) | Out-Null
+        $prompt = '$imagegen Generate: [描述畫面、風格、構圖與限制]. Save or copy the final PNG to ' + $target + '. Do not use an API key or API fallback.'
+        $prompt | codex exec --skip-git-repo-check --sandbox workspace-write --cd $project -
+        ```
+     3. 確認目標路徑的圖檔已產生且可讀取。
 4. **禁止事項**：
    - 嚴禁使用 Pollinations 等第三方免費生圖網站、帶浮水印或降畫質的替代服務。
    - 未經使用者明確要求，不得切換至需要 `OPENAI_API_KEY` 的付費 CLI／API 模式。
 5. **Gemini 頻率限制與防鎖自保機制（重要避坑）**：
    - **原因**：Google 生圖模型（Imagen 3 系列）對短時間內的高頻請求有嚴格的 RPM（Requests Per Minute）限制與防濫用風控，連續快速請求極易觸發 HTTP 429（`RESOURCE_EXHAUSTED`）並導致帳號被暫時凍結 5～15 分鐘。
-   - **批次產圖首選 Codex**：短劇分鏡（如一次生成 10 鏡以上首幀）等批次任務，一律優先使用第一優先的 Codex。
-   - **Gemini 批次防護守則**：若需透過腳本使用 Gemini 連續產圖，務必在每張圖片之間加入強制冷卻暫停（建議 `time.sleep(18)`，至少 15～20 秒）；若捕獲限流或 429 錯誤，必須指數退避休眠至少 60 秒再重試，嚴禁使用 `for` 迴圈無間隔狂刷。
+   - **批次產圖控流與備援分流**：透過腳本使用 Gemini 連續產圖時，務必在每張圖片之間加入強制冷卻暫停（建議 `time.sleep(18)`，至少 15～20 秒）；若捕獲限流或 429 錯誤，必須指數退避休眠至少 60 秒再重試，或改切第二優先 `gemini-web-imagegen`（具 Plus／Pro 帳號時可改用第三優先 Codex），嚴禁使用 `for` 迴圈無間隔狂刷。
 
 ### Antigravity 模型分工與思考等級（Thinking Level）建議
 

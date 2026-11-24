@@ -1,6 +1,6 @@
 # PROGRESS　進度與交接
 
-> 最後更新：2026-11-20（住家開發機）
+> 最後更新：2026-11-24（住家開發機）
 > 新對話接手：先讀 `AGENTS.md` → 本檔 → `README.md`「三、檔案總覽」
 
 ## 一、目前階段
@@ -40,8 +40,11 @@
 29. 前端 UI「去 AI 樣板味」美學規範入全域規則（2026-11-12）：經使用者確認採「美學規範入全域規則，重型套件留專案備用」架構，於 `global_rules.md` 第 7 節增補「前端網頁與介面美學（反 AI 套版味）」，禁止科技深藍與純白背景，明訂暖米白底色、石墨深炭灰、低對比邊框與機能邊條編碼；執行 `install.bat controlled` 完成全域派發至四大 Agent。
 30. 解決 `~/.gemini/GEMINI.md` 超過 Antigravity 24,000 bytes 單檔上限截斷尾端問題並雙向融合遠端規範（2026-11-14）：在不刪減任何規則條目、色票規格、實測結論與日期的前提下，精簡 `global_rules.md`、`machine_rules/personal.md` 與 `machine_rules/controlled.md`，並融合遠端 Swarm 隔離與前端 UI 美學規範，使 `home`／`dev` 與最長 `controlled` 合成後皆低於 24,000 bytes 且在 200 行內，完整保留末尾 `THIS MACHINE` 標籤；同步將 `< 24,000 bytes` 檢查寫入 `AGENTS.md` 與 `docs/rule_maintenance_sop.md`。
 31. 針對實測仍常漏發圖卡問題，重構 `global_rules.md` 開頭並補齊 Codex 圖卡設定（2026-11-20）：將原本擠在 `>` 引用塊的長段落拆成獨立 `## 動手前硬門檻（未跳圖卡確認，禁先寫／改／刪檔）` 小節、將「免問」改為嚴格白名單（禁腦補「算小改／只有一種解法」跳過）、強制「有引導就必在同回合發出選擇題 Tool Call」；同時實測確認本機 `~/.codex/config.toml` 缺 `default_mode_request_user_input = true`，於 `install.bat` 與 `install.sh`（非管制機）新增自動建立／安全補齊設定，同步更新 `AGENTS.md`、`README.md` 與 `docs/coding_agent_features_table.md`。
+32. 依 2026-11-24 實測免費版 Codex 已不掛載內建 `image_gen`，調整 AI 生圖優先順序為「Antigravity 第一 → Gemini Web 第二 → Codex 第三（僅限 ChatGPT Plus／Pro 付費帳號）」（2026-11-24）：同步更新 `global_rules.md`、`machine_rules/controlled.md`、`README.md`、`docs/verification_sources.md`、`docs/coding_agent_features_table.md` 與隔壁 `ai.agent_skills` 技能文件，並重新部署至本機。
 
 ## 二、使用者已確認的事
+
+- **AI 生圖優先順序調整（2026-11-24 使用者確認，取代 2026-10-24～10-27 舊順序）**：改為「第一優先 Antigravity 內建 `gemini-3.1-flash-image` 以上 → 第二優先（備援或指名）`gemini-web-imagegen` → 第三優先（僅限 ChatGPT Plus／Pro 付費帳號）Codex `$imagegen`」；Google Flow 維持指名觸發；同步更新本倉庫與隔壁 `ai.agent_skills`。
 
 - **前端 UI「去 AI 味」採美學入全域規則、重型套件留專案架構（2026-11-12 使用者確認）**：使用者重視介面視覺去 AI 樣板感（避免科技深藍、純白與紫藍漸層，偏好工業儀表板式之暖米白底色、石墨深炭灰與機能性邊條）。定案將該核心美學與色票規範寫入 `global_rules.md` 第 7 節，使所有 Agent 在任何專案或隨手寫 HTML 時皆能零額外 Token 負擔直覺套用；而具備 Vite、shadcn/ui 與 Playwright 之完整大型套件 `ai.agent_skills/project/frontend-suite/` 仍維持專案專屬備用庫。
 
@@ -89,6 +92,7 @@
 
 ## 四、已查證的重要發現
 
+- **免費版 Codex 內建生圖實測（2026-11-24，住家開發機）**：於 `codex-cli 0.167.0-alpha.4.1`（`gpt-6-luna`）與桌面版附帶 `codex.exe 0.171.0-alpha.13.2`（`gpt-5.6-terra`）搭配 `RUST_LOG=codex_core=debug` 實測，即使 `codex features list` 顯示 `image_generation = true`，免費 ChatGPT 帳號在工作階段皆完全未掛載 `image_gen`／`image_generation` 工具，僅 Plus／Pro 付費方案支援。
 - 詳見 `docs/coding_agent_features_table.md`（每列附查證日期與第六節官方網址）。
 - GitSync 的提交按鈕只提交勾選的檔案（`GitSync_GUI.ps1` 的 `BtnCommit`，2026-10-19 讀程式碼確認），所以可以只提交 `PROGRESS.md`。
 - 管制機端點防毒行為監控（Apex One）：VBScript 呼叫 `Shell.Application`（`ShellExecute`）叫起外部程式會被端點防毒直接攔截並發出資安告警；啟動 GUI 程式優先使用 `.cmd`／`.bat` 的 `start`（2026-10-20 在管制機實測）。
@@ -209,3 +213,4 @@
 | 2026-11-15 | 住家開發機 | 針對實測仍漏發圖卡問題，精準改寫 `global_rules.md` 第 5 行「問法」：禁寫「請確認以下…：」等等待結尾句、明訂即使單一推薦方案亦須發卡、收緊純文字替代退路，並通過全部 4 項驗證 |
 | 2026-11-15 | 住家開發機 | 比對 `Downloads\global_rules.md` 後於 `global_rules.md` 補入「勿無前情跳卡」、「勿寫長文致漏發」及 Antigravity「展開提示（`Worked for ... >`）」規範，通過全部 4 項驗證並更新本機（`install.bat home`） |
 | 2026-11-20 | 住家開發機 | 重構 `global_rules.md` 開頭為獨立「動手前硬門檻」並強制同回合發出選擇題 Tool Call、收緊免問白名單；`install.bat`／`install.sh`（非管制機）新增 Codex `config.toml` 一般模式 `default_mode_request_user_input = true` 設定，通過全部 4 項驗證並更新本機（`install.bat home`） |
+| 2026-11-24 | 住家開發機 | 實測免費版 Codex 已不掛載 `image_gen` 工具，調整生圖順序為 Antigravity 第一 → Gemini Web 第二 → Codex 第三（僅限 Plus／Pro 付費帳號）；同步更新規則、文件與 `ai.agent_skills` 技能說明，通過 4 項驗證並部署本機 |

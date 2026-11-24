@@ -18,5 +18,5 @@
 ## D. 網路
 - **實測可連**：唯一連公司內網（伺服器、NAS）。外網可連：PyPI、python.org、npm（`registry.npmjs.org`）、CDN；Google 雲端硬碟網頁版、`dl.google.com`、`script.google.com`、`www.googleapis.com`、`generativelanguage.googleapis.com`、`cloudaicompanion.googleapis.com`、`api.opencode.ai`（OpenCode 免費端點）。
 - **外網受限與無法連線**（未確認先請使用者實測）：
-  - **禁連 GitHub、OpenRouter 與 Codex 生圖**：代碼由開發機經雲端硬碟 `.bundle` 帶入；`openrouter.ai` 與 Codex／OpenAI 生圖無法連（2026-10-27、11-03 實測），OpenCode 限官方免費模型，生圖直走第二優先 Antigravity `image-generator` 子代理，或由開發機生圖經 `.bundle` 帶入。
+  - **禁連 GitHub、OpenRouter 與 Codex 生圖**：代碼由開發機經雲端硬碟 `.bundle` 帶入；`openrouter.ai` 與 Codex／OpenAI 生圖無法連（2026-10-27、11-03 實測），OpenCode 限官方免費模型，生圖走第一優先 Antigravity `image-generator` 子代理，或由開發機生圖經 `.bundle` 帶入。
   - **無法連 `oauth2.googleapis.com`（2026-10-22 實測）與 `*.gvt1.com`（逾時）**：Antigravity 無法刷 OAuth Token，GitSync「API 直連」無法換 Drive Token（切「手動」用瀏覽器傳 `.bundle`）；`edgedl.me.gvt1.com` 致 Google 更新卡住，下載改 `dl.google.com` 即可。

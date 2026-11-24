@@ -67,6 +67,7 @@
 | Codex 規則檔與容量限制 | 全域 `~/.codex/AGENTS.md`；專案從 Git／專案根目錄往下合併 `AGENTS.md`（預設不讀 `CLAUDE.md`）；預設合計上限 32 KiB | 官方 | https://developers.openai.com/codex/guides/agents-md/ | 2026-10-24 |
 | Codex 提問工具 `request_user_input` | 預設於 Plan mode 啟用；一般模式需在 `config.toml` 設 `[features] default_mode_request_user_input = true` | 實測／官方 | 本機 `codex features list` 與 GitHub `openai/codex` | 2026-10-25 |
 | Codex `$imagegen` 跨工具呼叫 | 透過 `codex exec` 可走本機 ChatGPT 登入額度呼叫內建 `image_gen` 產圖 | 實測 | 本機 `codex-imagegen-bridge` 技能實測 | 2026-10-24 |
+| Codex 免費方案不提供內建生圖（`image_gen`） | 免費 ChatGPT 帳號在 Codex CLI（0.167.0／0.171.0、`gpt-6-luna`／`gpt-5.6-terra`）工作階段皆不掛載 `image_gen` 工具，僅 Plus／Pro 付費方案支援 | 實測／官方方案說明 | 2026-11-24 本機 `codex exec` 實測與 OpenAI 方案說明 | 2026-11-24 |
 | Codex 子代理模型支援 | `.codex/agents/*.toml` 支援自家 GPT/Codex 型號或 `inherit`；不支援原生跨廠牌模型 | 官方 | https://developers.openai.com/codex/config-reference/ | 2026-11-03 |
 | OpenCode V2 規則檔格式 | 只讀 `AGENTS.md`，不讀 `CLAUDE.md`；無 fallback | 官方 | https://opencode.ai/v2/docs/instructions/ | 2026-10-28 |
 | OpenCode V2 往上找規則範圍 | 找到家目錄；工作區在家目錄以外時只到專案根目錄 | 官方 | 同上 | 2026-10-28 |
