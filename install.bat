@@ -6,8 +6,9 @@ rem     -> %USERPROFILE%\.gemini\GEMINI.md        (Antigravity)
 rem     -> %USERPROFILE%\.codex\AGENTS.md         (Codex)
 rem     -> %USERPROFILE%\.config\opencode\AGENTS.md (OpenCode)
 rem Dev/General PCs (home/dev/general): also make Claude Code read both CLAUDE.md and AGENTS.md
-rem   (%USERPROFILE%\.claude\settings.json, only created if missing)
-rem   and enable Codex default-mode request_user_input (%USERPROFILE%\.codex\config.toml)
+rem   (%USERPROFILE%\.claude\settings.json, only created if missing),
+rem   enable Codex default-mode request_user_input (%USERPROFILE%\.codex\config.toml),
+rem   and Antigravity Stop hook guard (%USERPROFILE%\.gemini\config\hooks.json)
 rem OpenCode: global config %USERPROFILE%\.config\opencode\opencode.jsonc (only created if missing)
 rem Existing files are backed up as *.YYYYMMDD_HHMMSS.bak before overwrite.
 rem Usage: install.bat [home|dev|controlled|general]   (no argument = ask)
@@ -60,6 +61,7 @@ call :install "%USERPROFILE%\.codex" "AGENTS.md" || goto :fail
 call :install "%USERPROFILE%\.config\opencode" "AGENTS.md" || goto :fail
 if /i not "%MACHINE%"=="controlled" call :settings || goto :fail
 if /i not "%MACHINE%"=="controlled" call :codexcfg || goto :fail
+if /i not "%MACHINE%"=="controlled" call :aghooks || goto :fail
 call :opencodecfg || goto :fail
 call :trigger_skills_deploy
 del "%SRC%" >nul 2>&1
@@ -153,6 +155,53 @@ cmd /c "codex features enable default_mode_request_user_input < nul" >nul 2>&1 &
     exit /b 0
 )
 echo [WARN] %CCFG% update failed. Add [features] default_mode_request_user_input = true manually, see README.
+exit /b 0
+
+:aghooks
+rem Antigravity: Stop hook guard against missing ask_question card (~/.gemini/config/hooks.json)
+set "HSRC=templates\hooks\ag_stop_card_guard.py"
+set "HDIR=%USERPROFILE%\.gemini\config\hooks"
+set "HDST=%HDIR%\ag_stop_card_guard.py"
+if not exist "%HSRC%" (
+    echo [ERROR] %HSRC% not found.
+    exit /b 1
+)
+if not exist "%HDIR%" mkdir "%HDIR%" || exit /b 1
+if exist "%HDST%" (
+    fc /b "%HSRC%" "%HDST%" >nul 2>&1 && (
+        echo [SKIP] %HDST% is already up to date.
+    ) || (
+        copy /y "%HDST%" "%HDST%.%TS%.bak" >nul || exit /b 1
+        echo [BACKUP] %HDST%.%TS%.bak
+        copy /y "%HSRC%" "%HDST%" >nul || exit /b 1
+        echo [OK] %HDST%
+    )
+) else (
+    copy /y "%HSRC%" "%HDST%" >nul || exit /b 1
+    echo [OK] %HDST%
+)
+set "HCFG=%USERPROFILE%\.gemini\config\hooks.json"
+if exist "%HCFG%" (
+    findstr /c:"stop-card-guard" "%HCFG%" >nul && (
+        echo [SKIP] %HCFG% already configured.
+        exit /b 0
+    )
+    echo [WARN] %HCFG% exists. Add stop-card-guard Stop hook manually, see README.
+    exit /b 0
+)
+>"%HCFG%" echo {
+>>"%HCFG%" echo   "stop-card-guard": {
+>>"%HCFG%" echo     "enabled": true,
+>>"%HCFG%" echo     "Stop": [
+>>"%HCFG%" echo       {
+>>"%HCFG%" echo         "type": "command",
+>>"%HCFG%" echo         "command": "python hooks/ag_stop_card_guard.py",
+>>"%HCFG%" echo         "timeout": 10
+>>"%HCFG%" echo       }
+>>"%HCFG%" echo     ]
+>>"%HCFG%" echo   }
+>>"%HCFG%" echo }
+echo [OK] %HCFG%
 exit /b 0
 
 :opencodecfg

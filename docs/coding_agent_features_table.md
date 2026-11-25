@@ -3,7 +3,7 @@
 > 整併自：原 coding_agent_features.md、lightweight_llm_improvement.md、interactive_question_rules.md（2026-10-31 併入第五節）；原始版本已移至資源回收筒或可查 Git 歷史。
 > 範圍：只收**寫程式用的 coding agent**（Claude Code、Antigravity、Codex、OpenCode）；聊天介面（claude.ai、Gemini Apps、ChatGPT 網頁版）不在本表。
 > 用途：設計 `global_rules.md`、`templates/` 規則與安裝腳本的依據。**每一列都有查證日期**；最後一次全面查證超過 1 個月就要重新查。
-> 最後全面查證：2026-10-28（最後整併與增補：2026-11-11）
+> 最後全面查證：2026-10-28（最後整併與增補：2026-11-25）
 > 標記：「—」查無對應功能；「⚠」只有第三方來源、本機實測或尚未查證。
 
 ---
@@ -164,7 +164,7 @@ Antigravity 於 2026-11 推出最新原生 Swarm 叢集協作系統與工作區�
 
 | 功能 | Claude Code | Antigravity | Codex | OpenCode | 查證日 |
 |---|---|---|---|---|---|
-| Hooks | `settings.json`；`PreToolUse` 可阻擋 | 工作區 `.agents/hooks.json`、全域 `~/.gemini/config/hooks.json`；`PreToolUse` 可 `deny` | `config.toml`／`hooks.json`；另 `~/.codex/rules/*.rules` 可設指令 `prefix_rule` 放行或阻擋 | 無宣告式 hooks；用 Plugin（`~/.config/opencode/plugins/`、`.opencode/plugins/*.ts`） | 2026-10-28 |
+| Hooks | `settings.json`；`PreToolUse` 可阻擋 | 工作區 `.agents/hooks.json`、全域 `~/.gemini/config/hooks.json`；支援 `SessionStart`、`PreToolUse`（可 `deny`）、`PostToolUse`、`PreInvocation`、`PostInvocation`、`Stop`（含 `continuationActive` 防無限迴圈） | `config.toml`／`hooks.json`；另 `~/.codex/rules/*.rules` 可設指令 `prefix_rule` 放行或阻擋 | 無宣告式 hooks；用 Plugin（`~/.config/opencode/plugins/`、`.opencode/plugins/*.ts`） | 2026-11-25 |
 | 拒絕讀取特定路徑 | `settings.json` 的 `permissions.deny`（例：`Read(./**/<資料夾>/**)`，相對路徑以啟動資料夾為起點；跨資料夾可能需改用 `//` 絕對路徑，⚠ 尚待實測），只擋內建讀檔工具（對 Bash 繞道效力有限）；`.claudeignore` 於 2026-10-22 實測無效 | — | —（沙盒管寫入範圍，無宣告式讀檔黑名單） | `opencode.jsonc` 的 `permissions`：`{action:"read", resource:"*<資料夾>*", effect:"deny"}`（`*` 會跨 `/`）；`external_directory` 可管工作區外的路徑 | 2026-10-28 |
 | 自動記憶 | `~/.claude/projects/<專案>/memory/MEMORY.md`（前 200 行／25KB 自動載入；只存使用者資訊、被糾正的回饋、專案背景、外部參照，除錯修法通常不存；只存該機器，不隨 Git 同步） | —（無背景自動記憶；僅手動 `/learn`，先提案、核准後寫入） | `~/.codex/memories_*.sqlite` | —（無背景自動記憶） | 2026-10-28 |
 | 附加系統提示 | `--append-system-prompt` | — | `-c developer_instructions=...` | agent 的 `system` 欄位（會取代該 agent 的基礎系統提示） | 2026-10-28 |
@@ -186,7 +186,8 @@ Antigravity 於 2026-11 推出最新原生 Swarm 叢集協作系統與工作區�
 | `global_rules.md` 200 行內（本倉庫 `AGENTS.md`） | 容量限制 |
 | 安裝位置（`install.bat`、`install.sh`、`global_rules.md` 開頭） | 全域規則 |
 | 資安防凍結阻擋讀取敏感專案與啟動資料夾限制（`global_rules.md` 第 8 節、`install.bat`、`install.sh`、README、`docs/claude_code_permissions_deny.md`） | 拒絕讀取特定路徑 |
-| 免記指令全自動提問卡片：規劃／3 檔以上／跨檔案／單檔大改前強制呼叫選擇題卡片，整合「規劃方案＋自我迴圈驗證＋動態子代理」（`global_rules.md` 開頭與第 4、9 節、README、本表第五節） | 互動式選擇題卡片、子代理 |
+| 免記指令全自動提問卡片：規劃／3 檔以上／跨檔案／單檔大改前強制呼叫選擇題卡片，整合「規劃方案＋自我迴圈驗證＋動態子代理」；禁寫冒號引導結尾句（`global_rules.md` 開頭與第 4、9 節、README、本表第五節） | 互動式選擇題卡片、子代理 |
+| 開發機 Antigravity `Stop` Hook 防漏發 `ask_question`（`templates/hooks/ag_stop_card_guard.py`、`install.bat`、`install.sh`、README；管制機因防毒不裝） | Hooks |
 | 安裝腳本自動將 `templates/skills/` 派發至四家工具全域技能目錄（`install.bat`、`install.sh`、`AGENTS.md`、README） | Skills |
 | 生圖第二優先備援 `gemini-web-imagegen`、Google Flow 跨專案生圖生片與 Three.js Web 3D 開發指引（`global_rules.md` 第 9 節、`templates/skills/`、README） | Skills |
 | 調用 OpenCode CLI 擔任外部子代理時依 `opencode-runner` Skill 強制加 `--agent plan` 唯讀鎖定、`--auto`、`< nul` 防卡死與動態工作池（`global_rules.md` 開頭與第 9 節、`templates/skills/opencode-runner/SKILL.md`、本表 2-2-1 節） | 規劃與訪談、子代理 |
@@ -215,7 +216,7 @@ Antigravity 於 2026-11 推出最新原生 Swarm 叢集協作系統與工作區�
 
 | 落差 | Claude Code（基準） | 其他 agent 常見表現 | 補強做法（免記指令，全靠提問卡片與規則） |
 |---|---|---|---|
-| 主動提問與規劃 | 動手前跳選擇題卡片，先給計畫等核准 | 直接改檔，或只在對話裡問一句 | 規則開頭改為獨立「動手前硬門檻（未跳圖卡禁寫／改／刪檔）」：收緊免問為明確白名單、禁止「自認小改／只有一種解法」跳過，並規定有引導就必在同回合發出工具呼叫（`ask_question`／`AskUserQuestion`／`question`／`request_user_input`）；Codex 一般模式由安裝腳本啟用 `default_mode_request_user_input` |
+| 主動提問與規劃 | 動手前跳選擇題卡片，先給計畫等核准 | 直接改檔，或只在對話裡問一句 | 規則開頭改為獨立「動手前硬門檻（未跳圖卡禁寫／改／刪檔）」：收緊免問為明確白名單、禁止「自認小改／只有一種解法」跳過，並規定「禁寫冒號引導結尾句，背景講完同回合直接呼叫工具」（`ask_question`／`AskUserQuestion`／`question`／`request_user_input`）；Codex 一般模式由安裝腳本啟用 `default_mode_request_user_input`；Antigravity 開發機／通用機另裝 `Stop` Hook（`ag_stop_card_guard.py`）自動拉回補發 |
 | 選項品質 | 標題＋說明＋優缺點 | 只有簡短名詞，缺決策資訊 | 固定選項格式：首項標 `(Recommended)`，每項寫「方案 — 白話做法、優缺點」 |
 | 自我迴圈驗證 | 會主動跑測試並修到過 | 傾向「看起來完成」就交差 | 提問卡片必問「② 自我迴圈驗證方式」；任務開頭寫驗收標準，改完自動跑驗證修到過（最多兩次）並附輸出 |
 | 子代理調度 | 大任務適時分工或獨立審查 | 不主動派，或亂派小任務浪費額度 | AI 先判斷任務是否合適（大範圍搜尋、平行改獨立檔、改完唯讀挑錯），合適時在卡片動態加問「③ 是否派子代理」；不合適時不問 |

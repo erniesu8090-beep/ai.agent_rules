@@ -19,7 +19,7 @@
 - 安裝結果：
   - `general`（通用／同事模式）= `global_rules.md` + 最後一行 `THIS MACHINE: general`
   - `home`／`dev`／`controlled`（個人模式）= `global_rules.md` + `machine_rules/personal.md` +（有的話）`machine_rules/<電腦代號>.md` + 最後一行 `THIS MACHINE: <home|dev|controlled>`
-  - 寫到 `~/.claude/CLAUDE.md`、`~/.gemini/GEMINI.md`、`~/.codex/AGENTS.md` 與 `~/.config/opencode/AGENTS.md`；非管制機另外設定 `~/.claude/settings.json` 與 `~/.codex/config.toml`（一般模式啟用圖卡）；所有電腦另外設定 `~/.config/opencode/opencode.jsonc`（見「不可更動的部分」）。
+  - 寫到 `~/.claude/CLAUDE.md`、`~/.gemini/GEMINI.md`、`~/.codex/AGENTS.md` 與 `~/.config/opencode/AGENTS.md`；非管制機另外設定 `~/.claude/settings.json`、`~/.codex/config.toml`（一般模式啟用圖卡）與 `~/.gemini/config/hooks.json`（搭配 `~/.gemini/config/hooks/ag_stop_card_guard.py`，Antigravity 防漏圖卡 Stop Hook，管制機因防毒不裝）；所有電腦另外設定 `~/.config/opencode/opencode.jsonc`（見「不可更動的部分」）。
 - 全域規則每次對話都會載入：條列、簡短、不重複；能放在工作區或專案規則的內容就不要放進全域。
 - 本倉庫會推送到 GitHub：不得出現公司內部主機名稱、IP、內網路徑、員工編號、公司專案名稱、GitHub 帳號。這些資訊寫在工作區規則檔（例如 `D:\AI_Workspace` 底下）。（例外：個人工具專案名稱 `google.cloud_oauth.relay` 與公開網域如 `*.googleapis.com` 的可否連線狀態，不含公司識別資訊，因安裝腳本需自動寫入 `settings.json` 故保留於本倉庫）
 - 修改規則內容時，同步檢查 `README.md` 與 `templates/` 是否需要一起更新。
@@ -43,7 +43,7 @@
 ## 不可更動的部分
 
 - 電腦代號 `home`、`dev`、`controlled`、`general`：規則內文與安裝腳本都依賴這四個代號。
-- 安裝目的地：`~/.claude/CLAUDE.md`、`~/.gemini/GEMINI.md`、`~/.codex/AGENTS.md`、`~/.config/opencode/AGENTS.md`；非管制機另外在 `~/.claude/settings.json` 不存在時建立（已存在只檢查、不改寫，避免弄壞使用者自己的設定），並在 `~/.codex/config.toml` 啟用 `default_mode_request_user_input = true`（不存在時建立；已存在則先備份再以 `codex features enable` 安全寫入，無 `codex` CLI 時僅警示）；所有電腦另外在 `~/.config/opencode/opencode.jsonc` 不存在時建立（規則同上）；全域技能由對稱之 `ai.agent_skills` 技能母本庫統一維護，並由安裝腳本自動偵測連動派發。
+- 安裝目的地：`~/.claude/CLAUDE.md`、`~/.gemini/GEMINI.md`、`~/.codex/AGENTS.md`、`~/.config/opencode/AGENTS.md`；非管制機另外在 `~/.claude/settings.json` 不存在時建立（已存在只檢查、不改寫，避免弄壞使用者自己的設定），在 `~/.codex/config.toml` 啟用 `default_mode_request_user_input = true`（不存在時建立；已存在則先備份再以 `codex features enable` 安全寫入，無 `codex` CLI 時僅警示），並安裝 `~/.gemini/config/hooks/ag_stop_card_guard.py` 與 `~/.gemini/config/hooks.json`（Antigravity 防漏圖卡 Stop Hook，已存在 `hooks.json` 時只檢查不覆寫；管制機因防毒不裝）；所有電腦另外在 `~/.config/opencode/opencode.jsonc` 不存在時建立（規則同上）；全域技能由對稱之 `ai.agent_skills` 技能母本庫統一維護，並由安裝腳本自動偵測連動派發。
 - 安裝前一定先備份既有檔案（`*.日期_時間.bak`），內容相同則略過。
 - `install.bat` 只用 ASCII、CRLF 換行；`install.sh` 用 LF 換行；換行由 `.gitattributes` 保證，不可刪除。
 
@@ -57,16 +57,17 @@
    ```powershell
    $t = "$env:TEMP\agentrules_test"; Remove-Item -Recurse -Force $t -ErrorAction SilentlyContinue; New-Item -ItemType Directory $t | Out-Null
    $env:USERPROFILE = $t
-   cmd /c "install.bat controlled < nul"   # 預期：4 行 rules [OK] + 1 行 opencode.jsonc [OK]
+   cmd /c "install.bat controlled < nul"   # 預期：4 行 rules [OK] + 1 行 opencode.jsonc [OK]（不建 hooks.json）
    cmd /c "install.bat controlled < nul"   # 預期：5 行 rules/cfg [SKIP]
-   cmd /c "install.bat dev < nul"          # 預期：4 組 [BACKUP]+[OK] + settings.json [OK] + config.toml [OK] + opencode.jsonc [SKIP]
-   cmd /c "install.bat dev < nul"          # 預期：7 行 rules/cfg [SKIP]
-   cmd /c "install.bat general < nul"      # 預期：4 組 [BACKUP]+[OK] + settings.json [SKIP] + config.toml [SKIP] + opencode.jsonc [SKIP]
+   cmd /c "install.bat dev < nul"          # 預期：4 組 [BACKUP]+[OK] + settings.json [OK] + config.toml [OK] + hooks 腳本與 hooks.json [OK] + opencode.jsonc [SKIP]
+   cmd /c "install.bat dev < nul"          # 預期：9 行 rules/cfg/hooks [SKIP]
+   cmd /c "install.bat general < nul"      # 預期：4 組 [BACKUP]+[OK] + settings.json [SKIP] + config.toml [SKIP] + hooks 腳本與 hooks.json [SKIP] + opencode.jsonc [SKIP]
    Get-Content "$t\.claude\CLAUDE.md" -Tail 1          # 預期：THIS MACHINE: general
    Get-Content "$t\.gemini\GEMINI.md" -Tail 1          # 預期：THIS MACHINE: general
    Get-Content "$t\.codex\AGENTS.md" -Tail 1           # 預期：THIS MACHINE: general
    Get-Content "$t\.config\opencode\AGENTS.md" -Tail 1 # 預期：THIS MACHINE: general
    Get-Content "$t\.codex\config.toml"                 # 預期：含 [features] 與 default_mode_request_user_input = true
+   Get-Content "$t\.gemini\config\hooks.json"          # 預期：含 stop-card-guard 與 Stop
    Get-Content "$t\.config\opencode\opencode.jsonc"    # 預期：含 instructions 與 permissions
    Remove-Item -Recurse -Force $t
    ```

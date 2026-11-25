@@ -1,6 +1,6 @@
 # PROGRESS　進度與交接
 
-> 最後更新：2026-11-24（住家開發機）
+> 最後更新：2026-11-25（住家開發機）
 > 新對話接手：先讀 `AGENTS.md` → 本檔 → `README.md`「三、檔案總覽」
 
 ## 一、目前階段
@@ -41,8 +41,11 @@
 30. 解決 `~/.gemini/GEMINI.md` 超過 Antigravity 24,000 bytes 單檔上限截斷尾端問題並雙向融合遠端規範（2026-11-14）：在不刪減任何規則條目、色票規格、實測結論與日期的前提下，精簡 `global_rules.md`、`machine_rules/personal.md` 與 `machine_rules/controlled.md`，並融合遠端 Swarm 隔離與前端 UI 美學規範，使 `home`／`dev` 與最長 `controlled` 合成後皆低於 24,000 bytes 且在 200 行內，完整保留末尾 `THIS MACHINE` 標籤；同步將 `< 24,000 bytes` 檢查寫入 `AGENTS.md` 與 `docs/rule_maintenance_sop.md`。
 31. 針對實測仍常漏發圖卡問題，重構 `global_rules.md` 開頭並補齊 Codex 圖卡設定（2026-11-20）：將原本擠在 `>` 引用塊的長段落拆成獨立 `## 動手前硬門檻（未跳圖卡確認，禁先寫／改／刪檔）` 小節、將「免問」改為嚴格白名單（禁腦補「算小改／只有一種解法」跳過）、強制「有引導就必在同回合發出選擇題 Tool Call」；同時實測確認本機 `~/.codex/config.toml` 缺 `default_mode_request_user_input = true`，於 `install.bat` 與 `install.sh`（非管制機）新增自動建立／安全補齊設定，同步更新 `AGENTS.md`、`README.md` 與 `docs/coding_agent_features_table.md`。
 32. 依 2026-11-24 實測免費版 Codex 已不掛載內建 `image_gen`，調整 AI 生圖優先順序為「Antigravity 第一 → Gemini Web 第二 → Codex 第三（僅限 ChatGPT Plus／Pro 付費帳號）」（2026-11-24）：同步更新 `global_rules.md`、`machine_rules/controlled.md`、`README.md`、`docs/verification_sources.md`、`docs/coding_agent_features_table.md` 與隔壁 `ai.agent_skills` 技能文件，並重新部署至本機。
+33. 根治住家機 Antigravity 偶發漏發圖卡問題（2026-11-25）：查證開新對話因 14 個 Plugins／43 個 Skills 致初始上下文高達 35,944 tokens（遠高於管制機），且規則誤刪「禁寫冒號引導尾句」容易讓模型收尾漏發工具；修正 `global_rules.md` 第 8 行改回禁寫冒號引導結尾句，並新增 Antigravity `Stop` Hook（`templates/hooks/ag_stop_card_guard.py`，僅開發機／通用機安裝，管制機因防毒不裝）於漏發時自動拉回補發，同時盤點 14 個 Plugins 供使用者瘦身。
 
 ## 二、使用者已確認的事
+
+- **Antigravity 漏發圖卡雙重防護定案（2026-11-25 使用者確認）**：`global_rules.md` 第 8 行恢復「禁寫冒號引導結尾句，背景講完直接叫工具」；同時於開發機／通用機（`home`／`dev`／`general`）安裝純標準庫 Python `Stop` Hook（`templates/hooks/ag_stop_card_guard.py` → `~/.gemini/config/hooks.json`）自動偵測漏發並拉回補發（管制機因防毒不裝），並盤點本機 14 個 Plugins 清單由使用者決定停用閒置項目。
 
 - **AI 生圖優先順序調整（2026-11-24 使用者確認，取代 2026-10-24～10-27 舊順序）**：改為「第一優先 Antigravity 內建 `gemini-3.1-flash-image` 以上 → 第二優先（備援或指名）`gemini-web-imagegen` → 第三優先（僅限 ChatGPT Plus／Pro 付費帳號）Codex `$imagegen`」；Google Flow 維持指名觸發；同步更新本倉庫與隔壁 `ai.agent_skills`。
 
@@ -91,6 +94,10 @@
 - （目前無待決定事項）
 
 ## 四、已查證的重要發現
+
+- **住家機 Antigravity 漏發圖卡根因與 Stop Hook 規格（2026-11-25，住家開發機）**：
+  - 查證本機對話 `transcript.jsonl` 確認：住家機因啟用 14 個 Plugins（含 6 個科學插件共 60 個 skills）與 43 個全域 Skills，開新對話第 1 步 `input_tokens` 即高達 `35,944`，稀釋規則注意力；且規則第 8 行「接簡短引導後呼叫工具」易誘發模型輸出冒號結尾句後直接結束回合（`NO_TOOL_CALL`）。
+  - 查證本機內建 `agy-customizations/docs/hooks.md` 確認：Antigravity 支援全域 `~/.gemini/config/hooks.json` 的 `Stop` 事件（`NO_TOOL_CALL` 時觸發，含 `continuationActive` 防無限迴圈、`transcriptPath` 指向對話紀錄），回傳 `{"decision": "continue", "reason": "..."}` 可立即拉回模型補發 `ask_question`。
 
 - **免費版 Codex 內建生圖實測（2026-11-24，住家開發機）**：於 `codex-cli 0.167.0-alpha.4.1`（`gpt-6-luna`）與桌面版附帶 `codex.exe 0.171.0-alpha.13.2`（`gpt-5.6-terra`）搭配 `RUST_LOG=codex_core=debug` 實測，即使 `codex features list` 顯示 `image_generation = true`，免費 ChatGPT 帳號在工作階段皆完全未掛載 `image_gen`／`image_generation` 工具，僅 Plus／Pro 付費方案支援。
 - 詳見 `docs/coding_agent_features_table.md`（每列附查證日期與第六節官方網址）。
@@ -143,6 +150,7 @@
      - 任務 B（已明確指定的小修改如改一句文字）：預期不跳卡片，直接改檔。
      - 任務 C（有兩種做法的單檔修改）：預期跳卡片（問 ① 規劃方案、② 自我迴圈驗證；不適合子代理故不問第 ③ 題）。
      - 任務 D（牽連 3 個以上檔案或大改動的任務）：預期跳卡片（一次問齊 ① 規劃與影響檔案清單、② 自我迴圈驗證、③ 是否派子代理分工／審查）。
+   - **實測 C（Antigravity Stop Hook 防漏與外掛瘦身，2026-11-25）**：重開 Antigravity 後開新對話直接以白話提出跨 3 檔需求，確認順利跳出 `ask_question` 圖卡且一般問答／完工回報不被誤攔；同時依盤點清單於 Plugins 面板關閉閒置科學插件以降低初始 Token。
 7. OpenCode 驗收（2026-10-28 加入，2026-11-04 更新）：
    - 在專案資料夾開新對話，確認讀到全域規則（最後一行 `THIS MACHINE`）與專案 `AGENTS.md`；再開 `D:\AI_Workspace` 底下的專案，確認工作區 `AGENTS.md`（若存在）有載入（靠 `opencode.jsonc` 的 `instructions`）。
    - 確認提問卡片走 `question` 工具（需求模糊或有兩種做法時）。
@@ -214,3 +222,4 @@
 | 2026-11-15 | 住家開發機 | 比對 `Downloads\global_rules.md` 後於 `global_rules.md` 補入「勿無前情跳卡」、「勿寫長文致漏發」及 Antigravity「展開提示（`Worked for ... >`）」規範，通過全部 4 項驗證並更新本機（`install.bat home`） |
 | 2026-11-20 | 住家開發機 | 重構 `global_rules.md` 開頭為獨立「動手前硬門檻」並強制同回合發出選擇題 Tool Call、收緊免問白名單；`install.bat`／`install.sh`（非管制機）新增 Codex `config.toml` 一般模式 `default_mode_request_user_input = true` 設定，通過全部 4 項驗證並更新本機（`install.bat home`） |
 | 2026-11-24 | 住家開發機 | 實測免費版 Codex 已不掛載 `image_gen` 工具，調整生圖順序為 Antigravity 第一 → Gemini Web 第二 → Codex 第三（僅限 Plus／Pro 付費帳號）；同步更新規則、文件與 `ai.agent_skills` 技能說明，通過 4 項驗證並部署本機 |
+| 2026-11-25 | 住家開發機 | 根治住家機 Antigravity 偶發漏發圖卡：`global_rules.md` 第 8 行恢復禁寫冒號引導結尾句、新增開發機／通用機專用 `Stop` Hook（`templates/hooks/ag_stop_card_guard.py` + `tests/test_ag_stop_card_guard.py`）與 `install.bat`/`install.sh` 部署邏輯，盤點 14 個 Plugins 並通過單元測試與全部 4 項倉庫驗證 |

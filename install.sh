@@ -5,7 +5,7 @@
 #     -> ~/.gemini/GEMINI.md（Antigravity）
 #     -> ~/.codex/AGENTS.md（Codex）
 #     -> ~/.config/opencode/AGENTS.md（OpenCode）
-# 開發機／通用機（home／dev／general）另外設定 Claude Code 同時讀 CLAUDE.md 與 AGENTS.md（~/.claude/settings.json，不存在才建立），並啟用 Codex 一般模式提問卡片（~/.codex/config.toml）
+# 開發機／通用機（home／dev／general）另外設定 Claude Code 同時讀 CLAUDE.md 與 AGENTS.md（~/.claude/settings.json，不存在才建立）、啟用 Codex 一般模式提問卡片（~/.codex/config.toml），以及 Antigravity 防漏圖卡 Stop Hook（~/.gemini/config/hooks.json）
 # OpenCode 全域設定 ~/.config/opencode/opencode.jsonc（不存在才建立）
 # 既有檔案會先備份成 *.YYYYMMDD_HHMMSS.bak
 # 用法：sh install.sh [home|dev|controlled|general]（不帶參數則詢問）
@@ -170,6 +170,53 @@ TOML
         fi
     else
         echo "[WARN] $ccfg 已存在，請照 README 手動加入 [features] default_mode_request_user_input = true"
+    fi
+
+    # Antigravity 全域設定：防漏圖卡 Stop Hook（~/.gemini/config/hooks.json）
+    hsrc="templates/hooks/ag_stop_card_guard.py"
+    hdir="$HOME/.gemini/config/hooks"
+    hdst="$hdir/ag_stop_card_guard.py"
+    if [ ! -f "$hsrc" ]; then
+        echo "[ERROR] 找不到 $hsrc"
+        exit 1
+    fi
+    mkdir -p "$hdir"
+    if [ -f "$hdst" ]; then
+        if cmp -s "$hsrc" "$hdst"; then
+            echo "[SKIP] $hdst 已是最新"
+        else
+            cp "$hdst" "$hdst.$ts.bak"
+            echo "[BACKUP] $hdst.$ts.bak"
+            cp "$hsrc" "$hdst"
+            echo "[OK] $hdst"
+        fi
+    else
+        cp "$hsrc" "$hdst"
+        echo "[OK] $hdst"
+    fi
+    hcfg="$HOME/.gemini/config/hooks.json"
+    if [ -f "$hcfg" ]; then
+        if grep -q "stop-card-guard" "$hcfg"; then
+            echo "[SKIP] $hcfg 已設定完成"
+        else
+            echo "[WARN] $hcfg 已存在，請照 README 手動加入 stop-card-guard Stop hook 設定"
+        fi
+    else
+        cat > "$hcfg" <<'JSON'
+{
+  "stop-card-guard": {
+    "enabled": true,
+    "Stop": [
+      {
+        "type": "command",
+        "command": "python3 hooks/ag_stop_card_guard.py",
+        "timeout": 10
+      }
+    ]
+  }
+}
+JSON
+        echo "[OK] $hcfg"
     fi
 fi
 
