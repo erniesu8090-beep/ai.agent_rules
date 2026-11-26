@@ -1,6 +1,6 @@
 # PROGRESS　進度與交接
 
-> 最後更新：2026-11-25（住家開發機）
+> 最後更新：2026-11-26（管制機）
 > 新對話接手：先讀 `AGENTS.md` → 本檔 → `README.md`「三、檔案總覽」
 
 ## 一、目前階段
@@ -42,8 +42,11 @@
 31. 針對實測仍常漏發圖卡問題，重構 `global_rules.md` 開頭並補齊 Codex 圖卡設定（2026-11-20）：將原本擠在 `>` 引用塊的長段落拆成獨立 `## 動手前硬門檻（未跳圖卡確認，禁先寫／改／刪檔）` 小節、將「免問」改為嚴格白名單（禁腦補「算小改／只有一種解法」跳過）、強制「有引導就必在同回合發出選擇題 Tool Call」；同時實測確認本機 `~/.codex/config.toml` 缺 `default_mode_request_user_input = true`，於 `install.bat` 與 `install.sh`（非管制機）新增自動建立／安全補齊設定，同步更新 `AGENTS.md`、`README.md` 與 `docs/coding_agent_features_table.md`。
 32. 依 2026-11-24 實測免費版 Codex 已不掛載內建 `image_gen`，調整 AI 生圖優先順序為「Antigravity 第一 → Gemini Web 第二 → Codex 第三（僅限 ChatGPT Plus／Pro 付費帳號）」（2026-11-24）：同步更新 `global_rules.md`、`machine_rules/controlled.md`、`README.md`、`docs/verification_sources.md`、`docs/coding_agent_features_table.md` 與隔壁 `ai.agent_skills` 技能文件，並重新部署至本機。
 33. 根治住家機 Antigravity 偶發漏發圖卡問題（2026-11-25）：查證開新對話因 14 個 Plugins／43 個 Skills 致初始上下文高達 35,944 tokens（遠高於管制機），且規則誤刪「禁寫冒號引導尾句」容易讓模型收尾漏發工具；修正 `global_rules.md` 第 8 行改回禁寫冒號引導結尾句，並新增 Antigravity `Stop` Hook（`templates/hooks/ag_stop_card_guard.py`，僅開發機／通用機安裝，管制機因防毒不裝）於漏發時自動拉回補發，同時盤點 14 個 Plugins 供使用者瘦身。
+34. 雙向融合 Downloads（2026-11-26 版）1～4 項精華與現行實戰防護（2026-11-26）：新增 `templates/deploy_nas/`（標準 Python 3.13 NAS Docker 容器與反向中繼架構指南）、`machine_rules/sandbox.md`（安裝腳本新增第 5 種 `sandbox` 模式）、`guidelines/script_encoding.md` 與 `guidelines/claude_code_rules.md`；`global_rules.md` 融入 EGM 第 ④ 題與 `/swarm` 提示並完整保留 Codex、Stop Hook 防漏圖卡、前端 UI 美學、AI 生圖與商業收納（最長 `controlled` 合成版 113 行／19,822 bytes，低於 200 行與 24KB 上限）；更新 `machine_rules/controlled.md` 與 `personal.md` 納入管制機日間（`07:30~17:30`）網路放行狀態，並補齊 `docs/`（2026-11-22 官方查證、四種子代理模式與 `Orchestrator`、雲端 Remote VM 沙盒與 `/prompt-audit`）；依管制機實測維持公司／管制機 Python 3.11（NAS 容器用 3.13）。
 
 ## 二、使用者已確認的事
+
+- **Downloads 2026-11-26 版混合雙向吸收定案（2026-11-26 管制機使用者確認）**：吸收 `templates/deploy_nas/`、`machine_rules/sandbox.md`、`guidelines/` 外移減壓結構、EGM／`/swarm` 提示與 `docs/` 2026-11-22～26 查證（Remote VM、四種子代理模式＋`Orchestrator`、`/prompt-audit`），同時完整保留現行 `Codex` 支援、`ag_stop_card_guard.py` Stop Hook 與禁引導結尾句、前端 UI 美學、AI 生圖與商業收納等實戰規範；因管制機實測僅有 Python 3.11／3.12（無 3.13），管制機與公司專案維持 Python 3.11，僅 NAS Docker 容器範本使用 Python 3.13。
 
 - **Antigravity 漏發圖卡雙重防護定案（2026-11-25 使用者確認）**：`global_rules.md` 第 8 行恢復「禁寫冒號引導結尾句，背景講完直接叫工具」；同時於開發機／通用機（`home`／`dev`／`general`）安裝純標準庫 Python `Stop` Hook（`templates/hooks/ag_stop_card_guard.py` → `~/.gemini/config/hooks.json`）自動偵測漏發並拉回補發（管制機因防毒不裝），並盤點本機 14 個 Plugins 清單由使用者決定停用閒置項目。
 
@@ -103,6 +106,9 @@
 - 詳見 `docs/coding_agent_features_table.md`（每列附查證日期與第六節官方網址）。
 - GitSync 的提交按鈕只提交勾選的檔案（`GitSync_GUI.ps1` 的 `BtnCommit`，2026-10-19 讀程式碼確認），所以可以只提交 `PROGRESS.md`。
 - 管制機端點防毒行為監控（Apex One）：VBScript 呼叫 `Shell.Application`（`ShellExecute`）叫起外部程式會被端點防毒直接攔截並發出資安告警；啟動 GUI 程式優先使用 `.cmd`／`.bat` 的 `start`（2026-10-20 在管制機實測）。
+- **管制機本機 Python 版本與對外網路最新實測（2026-11-17～18 網路、2026-11-26 Python 版本）**：
+  - `py -0p` 實測管制機僅安裝 Python `3.12` 與 `3.11`，尚未安裝 `3.13`。
+  - 管制機對外網路已「開放部分網域，期間為上班時間 `07:30~17:30`」：`oauth2.googleapis.com`、`github.com`、`api.github.com`、`gist.github.com` 於日間開放直連；`*.run.app`、`api.opencode.ai` 等核心端點全時段可連；`raw.githubusercontent.com`、`objects.githubusercontent.com`、`codeload.github.com`、`*.gvt1.com`、`openrouter.ai` 與 Codex 生圖仍全時段阻斷。
 - 管制機對外網路實測（2026-10-22、2026-10-27，測試方式：`curl.exe -I`／`Test-NetConnection`）：
   - 核心端點對照實測結果：
     - `generativelanguage.googleapis.com`（Gemini 核心模型）：可連（HTTP 404）
@@ -223,3 +229,4 @@
 | 2026-11-20 | 住家開發機 | 重構 `global_rules.md` 開頭為獨立「動手前硬門檻」並強制同回合發出選擇題 Tool Call、收緊免問白名單；`install.bat`／`install.sh`（非管制機）新增 Codex `config.toml` 一般模式 `default_mode_request_user_input = true` 設定，通過全部 4 項驗證並更新本機（`install.bat home`） |
 | 2026-11-24 | 住家開發機 | 實測免費版 Codex 已不掛載 `image_gen` 工具，調整生圖順序為 Antigravity 第一 → Gemini Web 第二 → Codex 第三（僅限 Plus／Pro 付費帳號）；同步更新規則、文件與 `ai.agent_skills` 技能說明，通過 4 項驗證並部署本機 |
 | 2026-11-25 | 住家開發機 | 根治住家機 Antigravity 偶發漏發圖卡：`global_rules.md` 第 8 行恢復禁寫冒號引導結尾句、新增開發機／通用機專用 `Stop` Hook（`templates/hooks/ag_stop_card_guard.py` + `tests/test_ag_stop_card_guard.py`）與 `install.bat`/`install.sh` 部署邏輯，盤點 14 個 Plugins 並通過單元測試與全部 4 項倉庫驗證 |
+| 2026-11-26 | 管制機 | 混合雙向吸收 Downloads 版（2026-11-26）1～4 項與現行規範：納入 `templates/deploy_nas/`、`machine_rules/sandbox.md`、`guidelines/` 2 檔、EGM／`/swarm` 卡片提示、`docs/` 最新官方查證（四種子代理／`Orchestrator`／雲端沙盒／`/prompt-audit`）與管制機日間網路放行；保留 Codex 支援、Stop Hook、美學、生圖、商業收納並維持公司／管制機 Python 3.11（NAS 容器用 3.13），通過全部驗證與 OpenCode CLI 唯讀審查 |

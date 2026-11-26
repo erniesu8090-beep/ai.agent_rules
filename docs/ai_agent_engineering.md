@@ -3,7 +3,7 @@
 > 整併自：原 CS2680_agent_practices、harness_improvement、llm_ai_agent_prompt_loop_meta_harness（2026-10-29）；原始版本已刪除，需要時查 Git 歷史。
 > 用途：給 coding agent 與人共用的「原理＋做法」總覽；規則怎麼寫、任務怎麼拆、成本怎麼省，先看這份。
 > 查證標示：**已查證（官方）**、**已查證（二手）**、**推測**、**查不到**。前沿名詞若只來自單一整理，會明確標示「未重新查證」。
-> 最後整理：2026-11-04
+> 最後整理：2026-11-26
 
 ---
 
@@ -200,7 +200,7 @@ LLM 本身是大腦，各大 Harness 提供的手腳與擴充元件分工如下�
   - **Vibe Coding 的 Description 黃金寫法**：不要寫抽象英文，直接將使用者口語常用的「白話特徵詞／情境」埋入 `description`（例如：*「當使用者提到 Colab、.ipynb、雲端 GPU（L4/A100）或打包下載時自動啟用」*）。
   - **效果**：使用者維持純白話溝通，完全不需要記憶手動輸入 Slash Command（如 `/colab-notebook`），AI 語意命中後會自動在背景載入整篇完整手冊與範本照著做。
 - **跨機派發架構與「漸進式揭露（Progressive Disclosure）」零污染保證**：
-  - **集中維護、全域派發**：通用 Skill 集中於 rules 倉庫維護，由 `install.bat`／`install.sh` 一鍵派發至四大 Agent 的全域技能目錄（`~/.gemini/config/skills/`、`~/.claude/skills/`、`~/.codex/skills/`、`~/.config/opencode/skills/`），三機（home/dev/controlled）與各專案皆可全局享有。
+  - **集中維護、全域派發**：通用 Skill 集中於獨立母本庫 `ai.agent_skills/global/` 維護（含 `opencode-runner` 跨引擎唯讀審查、`prompt-audit` 規則／提示詞健檢等），由 `install.bat`／`install.sh` 自動偵測連動 `deploy_global_skills` 派發至四大 Agent 的全域技能目錄（`~/.gemini/config/skills/`、`~/.claude/skills/`、`~/.codex/skills/`、`~/.config/opencode/skills/`），三台實體機與各專案皆可全局享有。
   - **零污染機制**：放全域**絕不會干擾不相干專案**。在不相干專案中，只有一行幾十 Token 的索引存在，幾千字長篇手冊留在硬碟不進 Context。
   - **防過度工程（Over-engineering）防線**：即便放全域零干擾，若任務極度低頻（如數月才用一次 Colab），**維持在 `templates/` 靜態範本反而維護成本最低**。唯有在 3～4 個專案中反覆出現、每次都要重教 AI 的高重複繁瑣 SOP，才值得升格為全域 Skill。
 
@@ -287,7 +287,41 @@ LLM 本身是大腦，各大 Harness 提供的手腳與擴充元件分工如下�
   1. **防止主上下文膨脹**：子代理在獨立程序開 session 閱讀專案大量檔案，中途雜訊不進入主對話，只回傳最終審查精華。
   2. **職責分離**：主代理專注於使用者意圖與架構推進，子代理專注於單點挑錯或特定演算法諮詢。
 
-### 7-3 錯誤會累積
+### 7-3 四種子代理模式與派工決策樹
+
+實務上包含「留在主對話」共有五種執行路徑（細節與跨工具比較見 `docs/coding_agent_features_table.md` 2-2-1 節第 ④ 小節）：
+
+#### ① 派工定位與決策樹（主對話 ＋ 四種子代理模式）
+
+```
+任務需求產生
+  ├── 小改動、前後高度相依？（或想省費兼顧高階規劃但須維持單一連貫記憶？）
+  │     └── 【留在主對話】單模型（最快最省），或選用 Orchestrator（如 Neon 規劃＋Hydrogen 執行雙模型自動接力）
+  ├── 大範圍查資料、瀏覽器實測、單點協助？
+  │     └── 【原生單工子代理（invoke_subagent）】如 research／browser／self，一對一派完即收、摘要回傳
+  ├── 高風險邏輯（登入／權限／金流／刪檔）想換不同大腦抓漏？
+  │     └── 【外部異質子代理（opencode-runner）】鎖定 --agent plan 唯讀，換獨立開源模型消除雙胞胎盲區
+  ├── SPEC.md 定案、準備設計／腦力激盪、金魚審查、補 README 或查文件脫節？
+  │     └── 【EGM 外掛工作流（/egm-*）】Elephant 主對話 ＋ 多隻隔離失憶 Goldfish 子代理評審（提問卡片第 ④ 題）
+  └── 大型功能拆成 3 個以上互不衝突的模組要平行開發並驗證？
+        └── 【原生平行蜂群（/swarm）】由使用者主動召喚，共享看板＋工作區隔離＋專職 verifier 把關
+```
+
+#### ② 機制定位快速區分（為何不混用？）
+
+- **Orchestrator 雙模型接力 vs. 隔離子代理**：**Orchestrator 是「單一對話裡的大腦＋手腳自動交接」**（例如 `Gemini 4 Neon` 訂計畫／卡住時接手修正、`Gemini 4 Hydrogen` 負責改碼／建置／跑測試），對話記憶完全共用、**不開平行分身也不隔離記憶**，目的在於「用較少花費與時間拿到高階規劃品質」。因此它歸屬於「留在主對話」路線，無法取代需要隔離上下文防污染（`invoke_subagent`）、失憶評審（EGM）、異質抓漏（OpenCode）或平行寫碼（Swarm）的子代理模式。
+- **原生單工子代理 vs. Swarm 蜂群**：兩者雖都是平台原生機制，但 `invoke_subagent` 是一對一主從、完成即止；Swarm 則是多成員長效共享看板團隊（主對話退居 `Coordinator` 不親自寫碼），且系統規範禁止 AI 擅自啟動 Swarm，須由使用者主動輸入 `/swarm` 召喚（提問卡片第 ③ 題僅於大型平行任務主動提示）。
+- **EGM 外掛團隊 vs. OpenCode CLI**：EGM（7 個 `/egm-*` 技能＋10 個評審子代理）底層仍是透過 `invoke_subagent` 啟動「不帶歷史對話的隔離金魚」審查文件與架構；OpenCode CLI 則不受限於主對話的模型家族，改派他廠獨立模型（如 DeepSeek）對程式碼做唯讀抓漏，且不消耗主力額度。
+
+#### ③ Native Swarm 團隊協同核心架構原則
+
+1. **協調者不親自動手（Do not do the work）**：Coordinator（主 Agent）專責拆解任務、下達清晰 Brief、判定成果與推進看板，不親自寫碼以免團隊失控停滯。
+2. **程式碼修改實體隔離（Workspace Isolation）**：編輯或建置型 Worker 必須指派獨立工作區（`workspace: "share"` 或 `"branch"`），嚴禁多 Worker 同改一檔；Verifier 與閱讀員維持 `inherit`，Verifier 只報錯不親自改碼。
+3. **門鈴喚醒機制（Doorbell Wakeup）**：看板 `@name` 會喚醒成員並消耗 Token；嚴禁濫用 `@all`，引用先前紀錄一律標序號（如 `#seq`）。
+4. **模型分級調度（Model Tiering）**：由旗艦大腦模型擔任 Coordinator，底下 Workers 分流給輕快省額度模型（如 `Hydrogen`／`Flash`），降低高頻看板互動成本。
+5. **為何由全域 Rules（提問卡片）提示守門？**：Skill 為被動載入且系統禁止 AI 擅自啟動 Swarm，故透過提問卡片第 ③ 題主動提示（小改動／高度相依不問），把派工與額度決定權交給使用者。
+
+### 7-4 錯誤會累積
 
 每步 95% 成功，50 步全對的機率約 **8%**。所以任務要切短，每步都要有可檢查的結果。
 
@@ -299,7 +333,7 @@ LLM 本身是大腦，各大 Harness 提供的手腳與擴充元件分工如下�
 | 「整理 parser」 | 一直重構停不下來 | 給結束條件與停止規則 |
 | 「最小改動又要全涵蓋」 | 默默放棄邊界情況 | 明確排序目標優先順序 |
 
-### 7-4 模型常見失敗與對策
+### 7-5 模型常見失敗與對策
 
 - 呼叫不存在的函式 → 查實際文件或原始碼。
 - 違反指示 → 規則具體化，重要限制改用權限或 Hook。

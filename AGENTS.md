@@ -10,14 +10,15 @@
 ## 目標執行環境
 
 - 開發在：住家開發機／公司開發機
-- 執行在：住家開發機、公司開發機、管制機（三台都要執行安裝腳本：Windows `install.bat`、Ubuntu `install.sh`）
-- 取得方式：住家與公司開發機用 GitHub；管制機由公司開發機經 GitSync 的 `.bundle` 帶過去（管制機連不到 GitHub）
+- 執行在：住家開發機、公司開發機、管制機（三台實體機皆需執行安裝腳本：Windows `install.bat`、Ubuntu `install.sh`），另支援通用 `general` 與雲端沙盒 `sandbox` 模式
+- 取得方式：住家與公司開發機用 GitHub；管制機於上班時間 `07:30~17:30` 可直連 GitHub 同步，非上班時段保留經公司開發機 GitSync 的 `.bundle` 帶過去作為備援
 
 ## 業務規則
 
-- `global_rules.md` 是純通用規則本體（不含個人電腦與跨機同步設定，方便分享給同事）；個人多機設定（home／dev／controlled 與 GitSync 流程）放在 `machine_rules/personal.md`；管制機專屬限制放在 `machine_rules/controlled.md`。
+- `global_rules.md` 是純通用規則本體（不含個人電腦與跨機同步設定，方便分享給同事）；個人多機設定（home／dev／controlled 與 GitSync 流程）放在 `machine_rules/personal.md`；管制機專屬限制放在 `machine_rules/controlled.md`；雲端沙盒專屬限制放在 `machine_rules/sandbox.md`。
 - 安裝結果：
   - `general`（通用／同事模式）= `global_rules.md` + 最後一行 `THIS MACHINE: general`
+  - `sandbox`（雲端沙盒模式）= `global_rules.md` + `machine_rules/sandbox.md` + 最後一行 `THIS MACHINE: sandbox`
   - `home`／`dev`／`controlled`（個人模式）= `global_rules.md` + `machine_rules/personal.md` +（有的話）`machine_rules/<電腦代號>.md` + 最後一行 `THIS MACHINE: <home|dev|controlled>`
   - 寫到 `~/.claude/CLAUDE.md`、`~/.gemini/GEMINI.md`、`~/.codex/AGENTS.md` 與 `~/.config/opencode/AGENTS.md`；非管制機另外設定 `~/.claude/settings.json`、`~/.codex/config.toml`（一般模式啟用圖卡）與 `~/.gemini/config/hooks.json`（搭配 `~/.gemini/config/hooks/ag_stop_card_guard.py`，Antigravity 防漏圖卡 Stop Hook，管制機因防毒不裝）；所有電腦另外設定 `~/.config/opencode/opencode.jsonc`（見「不可更動的部分」）。
 - 全域規則每次對話都會載入：條列、簡短、不重複；能放在工作區或專案規則的內容就不要放進全域。
@@ -33,7 +34,7 @@
 ## 撰寫規則的原則（依 Harvard CS2680 課程重點，2026-10-15）
 
 - 全域規則每次對話都整份載入：`global_rules.md` 以及最長的 `controlled` 合成後規則皆維持 200 行以內且小於 24,000 bytes（Antigravity 單檔載入上限，見 `docs/coding_agent_features_table.md`）；新增前先問「這條是不是每次對話都需要」。
-- 只在特定情境用到的內容，放到那個情境才會讀的地方：公司專案 → `templates/AGENTS_company.md`；逆向分析專案 → `templates/AGENTS_reverse.md`；只有某台電腦 → `machine_rules/`；查表、清單、操作步驟 → `README.md`。
+- 只在特定情境用到的內容，放到那個情境才會讀的地方：公司專案 → `templates/AGENTS_company.md`；逆向分析專案 → `templates/AGENTS_reverse.md`；只有某台電腦 → `machine_rules/`；共用規範與備用指引 → `guidelines/`；查表、清單、操作步驟 → `README.md`。
 - 該寫：硬性限制、AI 自己推斷不出來的事實（實測結果、踩過的坑，附日期）。不該寫：程式語言常識、長篇說明、機密。
 - 規則要具體可執行（寫「做什麼、不做什麼」），不寫「盡量」「注意」這類無法判斷是否做到的話。
 - 新增或修改後，通讀全部規則檔：同一件事不可在兩處寫成不同規定、交叉參照（「見第 N 節」）要正確、過時的規則要刪。
@@ -42,15 +43,15 @@
 
 ## 不可更動的部分
 
-- 電腦代號 `home`、`dev`、`controlled`、`general`：規則內文與安裝腳本都依賴這四個代號。
+- 電腦代號 `home`、`dev`、`controlled`、`general`、`sandbox`：規則內文與安裝腳本都依賴這五個代號。
 - 安裝目的地：`~/.claude/CLAUDE.md`、`~/.gemini/GEMINI.md`、`~/.codex/AGENTS.md`、`~/.config/opencode/AGENTS.md`；非管制機另外在 `~/.claude/settings.json` 不存在時建立（已存在只檢查、不改寫，避免弄壞使用者自己的設定），在 `~/.codex/config.toml` 啟用 `default_mode_request_user_input = true`（不存在時建立；已存在則先備份再以 `codex features enable` 安全寫入，無 `codex` CLI 時僅警示），並安裝 `~/.gemini/config/hooks/ag_stop_card_guard.py` 與 `~/.gemini/config/hooks.json`（Antigravity 防漏圖卡 Stop Hook，已存在 `hooks.json` 時只檢查不覆寫；管制機因防毒不裝）；所有電腦另外在 `~/.config/opencode/opencode.jsonc` 不存在時建立（規則同上）；全域技能由對稱之 `ai.agent_skills` 技能母本庫統一維護，並由安裝腳本自動偵測連動派發。
 - 安裝前一定先備份既有檔案（`*.日期_時間.bak`），內容相同則略過。
 - `install.bat` 只用 ASCII、CRLF 換行；`install.sh` 用 LF 換行；換行由 `.gitattributes` 保證，不可刪除。
 
 ## 修改後的驗證方式
 
-1. 檢查公司資訊沒有外洩（在專案資料夾開 Git Bash）：
-   `grep -rnE '\\\\[A-Za-z0-9]|([0-9]{1,3}\.){3}[0-9]{1,3}|[0-9]{6}' --exclude-dir=.git .`
+1. 檢查公司資訊沒有外洩（在專案資料夾開 Git Bash；排除 `deploy_nas` 內的 `0.0.0.0` 與 `\\<NAS_IP>` 等範例佔位值）：
+   `grep -rnE '\\\\[A-Za-z0-9]|([0-9]{1,3}\.){3}[0-9]{1,3}|[0-9]{6}' --exclude-dir=.git --exclude-dir=deploy_nas .`
    預期：沒有輸出（網路路徑、IP、六位數字如員工編號都不應出現）。
    另外對照工作區規則檔裡的公司主機、專案名稱人工確認；檢查用的關鍵字本身也不能寫進本倉庫。
 2. 用假的使用者資料夾測試安裝，不會動到真正的設定（在專案資料夾開 PowerShell）：
@@ -62,14 +63,17 @@
    cmd /c "install.bat dev < nul"          # 預期：4 組 [BACKUP]+[OK] + settings.json [OK] + config.toml [OK] + hooks 腳本與 hooks.json [OK] + opencode.jsonc [SKIP]
    cmd /c "install.bat dev < nul"          # 預期：9 行 rules/cfg/hooks [SKIP]
    cmd /c "install.bat general < nul"      # 預期：4 組 [BACKUP]+[OK] + settings.json [SKIP] + config.toml [SKIP] + hooks 腳本與 hooks.json [SKIP] + opencode.jsonc [SKIP]
-   Get-Content "$t\.claude\CLAUDE.md" -Tail 1          # 預期：THIS MACHINE: general
-   Get-Content "$t\.gemini\GEMINI.md" -Tail 1          # 預期：THIS MACHINE: general
-   Get-Content "$t\.codex\AGENTS.md" -Tail 1           # 預期：THIS MACHINE: general
-   Get-Content "$t\.config\opencode\AGENTS.md" -Tail 1 # 預期：THIS MACHINE: general
+   cmd /c "install.bat sandbox < nul"      # 預期：4 組 [BACKUP]+[OK] + settings.json [SKIP] + config.toml [SKIP] + hooks 腳本與 hooks.json [SKIP] + opencode.jsonc [SKIP]
+   Get-Content "$t\.claude\CLAUDE.md" -Tail 1          # 預期：THIS MACHINE: sandbox
+   Get-Content "$t\.gemini\GEMINI.md" -Tail 1          # 預期：THIS MACHINE: sandbox
+   Get-Content "$t\.codex\AGENTS.md" -Tail 1           # 預期：THIS MACHINE: sandbox
+   Get-Content "$t\.config\opencode\AGENTS.md" -Tail 1 # 預期：THIS MACHINE: sandbox
    Get-Content "$t\.codex\config.toml"                 # 預期：含 [features] 與 default_mode_request_user_input = true
    Get-Content "$t\.gemini\config\hooks.json"          # 預期：含 stop-card-guard 與 Stop
    Get-Content "$t\.config\opencode\opencode.jsonc"    # 預期：含 instructions 與 permissions
    Remove-Item -Recurse -Force $t
    ```
+   （註：若工作目錄上層存在 `..\ai.agent_skills` 或 `..\..\ai.agent_skills`，`install.bat` 末段亦會連動觸發全域技能派發）
 3. `install.bat` 沒有非 ASCII 字元：`grep -nP '[^\x00-\x7F]' install.bat` 沒有輸出。
-4. 行數與位元組數：`global_rules.md` 以及最長的 `controlled` 合成後規則皆不超過 200 行，且檔案大小必須小於 24,000 bytes（防止 Antigravity `~/.gemini/GEMINI.md` 超過 24,000 bytes 單檔上限而截斷尾端 `machine_rules/` 與 `THIS MACHINE` 標籤；PowerShell：`(Get-Content global_rules.md -Encoding UTF8).Count`，一定要加 `-Encoding UTF8`，否則 PowerShell 5.1 用 Big5 讀檔，行數會算錯；位元組數檢查：`(Get-Item "$t\.gemini\GEMINI.md").Length` 預期 `< 24000`；Git Bash：`wc -lc global_rules.md`）；超過時先精簡或搬移，再提交。
+4. 行數與位元組數：`global_rules.md` 以及最長的 `controlled` 合成後規則皆不超過 200 行，且檔案大小必須小於 24,000 bytes（防止 Antigravity `~/.gemini/GEMINI.md` 超過 24,000 bytes 單檔上限而截斷尾端 `machine_rules/` 與 `THIS MACHINE` 標籤；PowerShell：`@(Get-Content global_rules.md -Encoding UTF8).Count`，一定要加 `-Encoding UTF8`，否則 PowerShell 5.1 用 Big5 讀檔，行數會算錯；位元組數檢查：`(Get-Item "$t\.gemini\GEMINI.md").Length` 預期 `< 24000`；Git Bash：`wc -lc global_rules.md`）；超過時先精簡或搬移，再提交。
+5. Stop Hook 單元測試（本倉庫內建）：`.venv\Scripts\python.exe -m pytest tests\test_ag_stop_card_guard.py`（預期：全數通過）。

@@ -34,7 +34,7 @@
 <!-- 公司專案規則：開始（來源 ai.agent_rules/templates/AGENTS_company.md；更新時整段替換到「結束」標記，不要手動改這段） -->
 ## 公司專案規則
 
-> 公司規則版本：2026-10-21
+> 公司規則版本：2026-11-26
 
 ### 環境與同步
 - `.venv`、`runtime\`、大型壓縮檔不進 Git，每台各自建立；`.venv` 用 GitSync 的「管理專案 / .venv」建立或更新。
@@ -48,6 +48,7 @@
 - 不是 Python 的同事工具，優先做成單一 HTML 檔或 PowerShell 視窗工具。
 - 內網網頁用到的 JS/CSS 函式庫一律下載放進專案，不依賴外部 CDN（同事電腦能不能連 CDN 無法保證）。
 - 發布到內網伺服器（網站資料夾、NAS）一律用 GitSync 的「網頁發布」分頁（比對差異、覆寫前備份、可還原），不另寫會直接覆寫伺服器的腳本。
+- NAS 容器服務（Docker）：新專案需要部署到 NAS 時，從 `ai.agent_rules/templates/deploy_nas/` 複製設定檔案（`.dockerignore` 放在專案根目錄，`Dockerfile`、`docker-compose.yml`、`env.nas.example` 放在專案的 `deploy/nas/`）；容器內部採標準 Python 3.13 鏡像、台灣時區與 Noto Sans CJK 字型規範；設定 GitSync 發布時嚴格排除本地環境與敏感檔，並將線上資料庫檔案列入 `ProtectFiles` 防止覆寫；若遇到內網防火牆雙向隔離，依 `ai.agent_rules/templates/deploy_nas/REVERSE_RELAY_GUIDE.md` 採反向中繼快遞模式。
 - 不主動刪除共用磁碟、伺服器上的檔案（包含線上的舊備份）；使用 `robocopy /MIR`、`/PURGE` 這類會刪除目的地檔案的參數前，先說明影響並取得同意。
 
 ### 成品的防毒相容

@@ -15,7 +15,8 @@ flowchart LR
   subgraph REPO["本倉庫 ai.agent_rules"]
     G["global_rules.md<br/>全域規則本體"]
     M["machine_rules/<br/>personal.md + &lt;電腦&gt;.md"]
-    T["templates/<br/>新專案範本（SPEC / PROGRESS / AGENTS）"]
+    T["templates/<br/>新專案範本（SPEC / PROGRESS / AGENTS / deploy_nas）"]
+    GL["guidelines/<br/>共用規範與備用指引"]
     D["docs/coding_agent_features_table.md<br/>各家工具功能對照（依據）"]
   end
 
@@ -27,6 +28,7 @@ flowchart LR
   I --> O["~/.config/opencode/AGENTS.md<br/>OpenCode 全域"]
 
   T -- 複製後填寫 --> P["各專案的 AGENTS.md<br/>（＋ PROGRESS.md、SPEC.md）"]
+  GL -. 按需參考 .-> P
   D -. 設計規則時參考 .-> G
   D -. 設計規則時參考 .-> T
 ```
@@ -52,8 +54,9 @@ flowchart TB
 |---|---|---|---|
 | 住家開發機（home） | Claude Code、Antigravity、Codex、OpenCode | `global_rules.md` + `machine_rules/personal.md` | 只用 GitHub |
 | 公司開發機（dev） | Claude Code、Antigravity、Codex、OpenCode | `global_rules.md` + `machine_rules/personal.md` | GitHub、`.bundle`（兩邊的中繼） |
-| 管制機（controlled） | Antigravity、OpenCode | `global_rules.md` + `machine_rules/personal.md` + `machine_rules/controlled.md` | 只用 `.bundle`（連不到 GitHub） |
+| 管制機（controlled） | Antigravity、OpenCode | `global_rules.md` + `machine_rules/personal.md` + `machine_rules/controlled.md` | GitHub（上班時間 `07:30~17:30` 開放直連；非此時段或備援用 `.bundle`） |
 | 通用／同事電腦（general） | Claude Code、Antigravity、Codex、OpenCode | `global_rules.md`（純通用規則，不含個人跨機環境設定） | 依各自環境 |
+| 雲端沙盒／遠端代理（sandbox） | Claude Code、Antigravity、Codex、OpenCode | `global_rules.md` + `machine_rules/sandbox.md`（非 root 權限邊界、Proxy 限制、無 Localhost 直連等） | 走沙盒 Git/GitHub 整合插件 |
 
 ---
 
@@ -66,8 +69,9 @@ flowchart TB
 | 含公司內部資訊（主機、內網路徑、專案名稱） | 工作區 `AGENTS.md`（不進本倉庫） | 內網磁碟對應 |
 | 管的是別人的 fork（不能改它的 `AGENTS.md`） | 工作區 `AGENTS.md` | fork 只讀、同步上游的做法 |
 | 只適用個人跨機流程（三機分工、GitSync、`.bundle`） | `machine_rules/personal.md` | 住家／公司／管制機同步流程 |
-| 只適用某一台電腦 | `machine_rules/<電腦代號>.md` | 管制機的防毒限制 |
-| 只有公司專案用得到 | `templates/AGENTS_company.md`「公司專案規則」區塊 | 發布、成品防毒相容 |
+| 只適用某一台電腦 | `machine_rules/<電腦代號>.md` | 管制機的防毒限制、沙盒邊界 |
+| 跨專案共用規範、編碼避坑或備用規則 | `guidelines/` | 腳本編碼規範、Claude Code 細節 |
+| 只有公司專案用得到 | `templates/AGENTS_company.md`「公司專案規則」區塊 | 發布、成品防毒相容、NAS 容器 |
 | 只有逆向分析專案用得到 | `templates/AGENTS_reverse.md`「逆向分析規則」區塊 | 原版備份、寫入長度檢查 |
 | 只有一個專案用得到 | 該專案的 `AGENTS.md` | 某工具的業務規則 |
 | 是查表、清單、操作步驟 | 本 README | 開發用 CLI 清單、AI 生圖規範 |
@@ -84,18 +88,22 @@ flowchart TB
 | `global_rules.md` | AI | 全域通用規則本體（不含個人電腦與跨機設定，方便分享給同事參考） |
 | `machine_rules/personal.md` | AI | 個人跨機環境與 GitSync 同步規則（`home`／`dev`／`controlled` 模式自動附加） |
 | `machine_rules/controlled.md` | AI | 只裝到管制機的規則 |
+| `machine_rules/sandbox.md` | AI | 只裝到雲端沙盒／遠端代理環境的規則（非 root 權限邊界、Proxy 限制、無 Localhost 直連等） |
 | `templates/AGENTS.md` | AI | 個人專案範本 |
-| `templates/AGENTS_company.md` | AI | 公司專案範本（含「公司專案規則」區塊） |
+| `templates/AGENTS_company.md` | AI | 公司專案範本（含「公司專案規則」區塊與 NAS 部署指標） |
 | `templates/AGENTS_reverse.md` | AI | 逆向分析專案範本（含「逆向分析規則」區塊） |
 | `templates/PROGRESS.md`、`templates/.gitignore` | AI 與人 | 進度交接檔、Git 排除清單範本 |
 | `templates/SPEC.md` | AI 與人 | 新專案規格範本（還沒寫程式時的規劃，附搬移對照表） |
 | `templates/colab_notebook.md`、`templates/colab_notebook.ipynb` | AI | Colab 筆記本排版規範與骨架（專案要用 Colab 算力時才用） |
-| `templates/hooks/ag_stop_card_guard.py` | Antigravity | Antigravity `Stop` Hook 防漏圖卡檢查腳本（僅開發機／通用機安裝，管制機因防毒不裝） |
-| [`ai.agent_skills`](../ai.agent_skills/) | AI 與人 | 獨立對稱之技能母本庫（收錄全域與專案專屬 Skills：`opencode-runner`、`threejs`、`frontend-suite`、`document-skills` 等，安裝腳本自動偵測連動） |
-| `docs/ai_agent_engineering.md` | AI 與人 | LLM／agent 原理、七層演進、上下文管理、Harness 稽核 A～J（整併 CS2680、harness、loop 三份）｜什麼時候讀：想理解「為什麼要這樣設計規則」、要稽核或改善 agent 環境時 |
-| `docs/coding_agent_features_table.md` | AI 與人 | 各家 coding agent 功能對照表，附查證日期；設計規則的依據；含 Harness 差異與提問卡片規格｜什麼時候讀：寫規則、改安裝腳本、懷疑工具讀不到規則時 |
+| `templates/deploy_nas/` | AI 與人 | NAS 容器部署與發布規範套件（含標準 Dockerfile [Python 3.13]、Compose、.dockerignore、GitSync 排除與保護、反向中繼快遞模式架構指南） |
+| `templates/hooks/ag_stop_card_guard.py` | Antigravity | Antigravity `Stop` Hook 防漏圖卡檢查腳本（僅非管制機安裝，管制機因防毒不裝） |
+| `guidelines/claude_code_rules.md` | AI 與人 | Claude Code 專屬進階規則、並存細節與防凍結設定備忘 |
+| `guidelines/script_encoding.md` | AI 與人 | `.bat`／`.vbs`／`.ps1`／`.sh` 編碼避坑、CP950、PowerShell 5.1 限制與跨 Linux `sys.platform` 分流規範 |
+| [`ai.agent_skills`](../ai.agent_skills/) | AI 與人 | 獨立對稱之技能母本庫（收錄全域與專案專屬 Skills：`opencode-runner`、`prompt-audit`、`threejs`、`frontend-suite`、`document-skills` 等，安裝腳本自動偵測連動） |
+| `docs/ai_agent_engineering.md` | AI 與人 | LLM／agent 原理、七層演進、上下文管理、四種子代理決策樹、Harness 稽核 A～J｜什麼時候讀：想理解「為什麼要這樣設計規則」、要稽核或改善 agent 環境時 |
+| `docs/coding_agent_features_table.md` | AI 與人 | 各家 coding agent 功能對照表（含四種子代理／EGM／`Orchestrator` 與雲端沙盒），附查證日期｜什麼時候讀：寫規則、改安裝腳本、懷疑工具讀不到規則時 |
 | `docs/claude_code_permissions_deny.md` | AI 與人 | Claude Code 防凍結規則與 `permissions.deny` 設定說明｜什麼時候讀：新增敏感專案、Claude 被 safeguards 擋住時 |
-| `docs/rule_maintenance_sop.md` | AI 與人 | 規則整理與 Harness 稽核 SOP：盤點、提案、套用、驗證、停損｜什麼時候讀：規則超過 200 行、同一件事寫在很多檔案、每月整理時 |
+| `docs/rule_maintenance_sop.md` | AI 與人 | 規則整理與 Harness 稽核 SOP（含 `/prompt-audit` 快篩）：盤點、提案、套用、驗證、停損｜什麼時候讀：規則超過 200 行、同一件事寫在很多檔案、每月整理時 |
 | `docs/verification_sources.md` | AI 與人 | 查證狀態與來源總表，含「推測」「查不到」清單｜什麼時候讀：每月重新查證、要確認某句話有沒有官方依據時 |
 | `install.bat`／`install.sh` | 人 | 安裝腳本（Windows／Linux、macOS） |
 | `AGENTS.md` | AI | 維護**本倉庫**時的規則（含修改後的驗證方式） |
@@ -111,22 +119,23 @@ flowchart TB
 
 ## 四、安裝
 
-三台有 AI 工具的電腦都要安裝。
+三台實體機要安裝，另有通用與雲端沙盒模式。
 
 1. 取得這個倉庫，放在 `D:\AI_Workspace\ai.agent_rules`（Ubuntu 放在 `~/AI_Workspace/ai.agent_rules`）：
-   - 住家開發機、公司開發機：從 GitHub `git clone`。
-   - 管制機（連不到 GitHub）：在公司開發機用 GitSync「管理專案 / .venv」→「可加入的資料夾」把本倉庫加進清單並推送到 `.bundle`；再到管制機下載 `.bundle`，用「從 .bundle 建立」取得。
-2. Windows：雙擊 `install.bat`，按 `1`（住家開發機）、`2`（公司開發機）、`3`（管制機）或 `4`（通用／同事電腦，只裝通用規則）。
+   - 住家開發機、公司開發機、管制機（上班時間 `07:30~17:30`）：從 GitHub `git clone`／拉取。
+   - 管制機非上班時段或備援：在公司開發機用 GitSync「管理專案 / .venv」→「可加入的資料夾」把本倉庫加進清單並推送到 `.bundle`；再到管制機下載 `.bundle`，用「從 .bundle 建立」取得。
+2. Windows：雙擊 `install.bat`，按 `1`（住家開發機）、`2`（公司開發機）、`3`（管制機）、`4`（通用／同事電腦，只裝通用規則）或 `5`（雲端沙盒／遠端代理）。
    Linux／macOS：執行 `sh install.sh`。
 3. 重新啟動 Claude Code／Antigravity／Codex／OpenCode。
 
 - 安裝內容：
   - `general`（通用／同事模式）= `global_rules.md` + 最後一行 `THIS MACHINE: general`
+  - `sandbox`（雲端沙盒模式）= `global_rules.md` + `machine_rules/sandbox.md` + 最後一行 `THIS MACHINE: sandbox`
   - `home`／`dev`／`controlled`（個人模式）= `global_rules.md` + `machine_rules/personal.md` +（有的話）`machine_rules/<電腦代號>.md` + 最後一行 `THIS MACHINE: <電腦代號>`
-- 安裝目的地：`~/.claude/CLAUDE.md`（Claude Code）、`~/.gemini/GEMINI.md`（Antigravity）、`~/.codex/AGENTS.md`（Codex）、`~/.config/opencode/AGENTS.md`（OpenCode）。
-- 全域技能派發：自動將 `templates/skills/` 內的所有通用技能（如 `opencode-runner`）同步至各 Agent 全域技能目錄（`~/.claude/skills/`、`~/.gemini/config/skills/`、`~/.codex/skills/`、`~/.config/opencode/skills/`）。
+- 安裝目的地：`~/.claude/CLAUDE.md`（Claude Code）、`~/.gemini/GEMINI.md`（Antigravity）、`~/.codex/AGENTS.md`（Codex）、`~/.config/opencode/AGENTS.md`（OpenCode）。註：`guidelines/` 與 `templates/` 留存於本倉庫供按需查閱，不隨安裝腳本複製到全域設定目錄。
+- 全域技能派發：技能母本庫集中於對稱倉庫 [`ai.agent_skills`](../ai.agent_skills/) 管理；當工作區上層存在該倉庫時，`install.bat`／`install.sh` 末段會自動偵測並觸發 `deploy_global_skills` 派發至四大 Agent 全域技能目錄。
 - 原本已有的檔案會先備份成 `CLAUDE.md.日期_時間.bak`（其他目的地同理）；內容相同就略過。
-- 開發機與通用機（home、dev、general）另外設定 Claude Code **同時讀 `CLAUDE.md` 與 `AGENTS.md`**（個人模式另含 **資安防凍結阻擋清單 `permissions.deny`**）：`~/.claude/settings.json` 不存在就建立；已存在只檢查，缺少設定時顯示 `[WARN]`，請手動在檔案裡加入下面這段（和原有內容合併，注意逗號；細節見 `docs/claude_code_permissions_deny.md`）：
+- 開發機、通用機與沙盒（home、dev、general、sandbox）另外設定 Claude Code **同時讀 `CLAUDE.md` 與 `AGENTS.md`**（個人模式另含 **資安防凍結阻擋清單 `permissions.deny`**）：`~/.claude/settings.json` 不存在就建立；已存在只檢查，缺少設定時顯示 `[WARN]`，請手動在檔案裡加入下面這段（和原有內容合併，注意逗號；細節見 `guidelines/claude_code_rules.md` 與 `docs/claude_code_permissions_deny.md`）：
   ```json
   "permissions": {
     "deny": [
@@ -143,9 +152,9 @@ flowchart TB
   }
   ```
   - **外掛 ID 設定**：上方範本同時寫入新舊兩種外掛 ID 以相容各版本（版本分界與查證依據見對照表第二節）；亦可直接在 Claude Code 執行 `/config`（把「Project instructions」改成 `claude-md-and-agents-md`）設定。
-  - **阻擋路徑注意**：`permissions.deny` 的 `./` 相對路徑是以「啟動 Claude Code 時所在的資料夾」為起點（非倉庫根目錄），跨資料夾啟動時的保護效果尚待實測；若實測擋不住，評估改用 `//` 絕對路徑（尚待實測）。請勿在含敏感專案的上層目錄啟動 Claude Code；設定後可執行 `/permissions` 確認。管制機沒有 Claude Code，不設定。
-- 開發機與通用機（home、dev、general）另外設定 Codex **一般模式啟用互動提問卡片**：`~/.codex/config.toml` 不存在時建立；已存在但未啟用 `default_mode_request_user_input = true` 時，若偵測到 `codex` CLI 則先備份再執行 `codex features enable default_mode_request_user_input` 安全補上（無 CLI 時顯示 `[WARN]` 請手動補入 `[features]`）。管制機沒有 Codex，不設定。
-- 開發機與通用機（home、dev、general）另外設定 Antigravity **防漏圖卡 `Stop` Hook**：將 `templates/hooks/ag_stop_card_guard.py` 安裝至 `~/.gemini/config/hooks/ag_stop_card_guard.py`，並在 `~/.gemini/config/hooks.json` 不存在時建立；若 `hooks.json` 已存在但缺少 `stop-card-guard`，會顯示 `[WARN]`，請手動將下方區塊合併進既有 JSON 物件（管制機因端點防毒行為監控，不安裝此 Hook）：
+  - **阻擋路徑注意**：`permissions.deny` 的 `./` 相對路徑是以「啟動 Claude Code 時所在的資料夾」為起點（非倉庫根目錄），跨資料夾啟動時的保護效果尚待實測；請勿在含敏感專案的上層目錄啟動 Claude Code；設定後可執行 `/permissions` 確認。管制機沒有 Claude Code，不設定。
+- 非管制機（home、dev、general、sandbox）另外設定 Codex **一般模式啟用互動提問卡片**：`~/.codex/config.toml` 不存在時建立；已存在但未啟用 `default_mode_request_user_input = true` 時，若偵測到 `codex` CLI 則先備份再執行 `codex features enable default_mode_request_user_input` 安全補上（無 CLI 時顯示 `[WARN]` 請手動補入 `[features]`）。管制機沒有 Codex，不設定。
+- 非管制機（home、dev、general、sandbox）另外設定 Antigravity **防漏圖卡 `Stop` Hook**：將 `templates/hooks/ag_stop_card_guard.py` 安裝至 `~/.gemini/config/hooks/ag_stop_card_guard.py`，並在 `~/.gemini/config/hooks.json` 不存在時建立；若 `hooks.json` 已存在但缺少 `stop-card-guard`，會顯示 `[WARN]`，請手動將下方區塊合併進既有 JSON 物件（管制機因端點防毒行為監控，不安裝此 Hook）：
   ```json
   "stop-card-guard": {
     "enabled": true,
@@ -158,8 +167,8 @@ flowchart TB
     ]
   }
   ```
-  （Linux／macOS 請將 `"command"` 改為 `"python3 hooks/ag_stop_card_guard.py"`）
-- OpenCode 另外建立 `~/.config/opencode/opencode.jsonc`（不存在才建立；已存在只檢查，缺少設定時顯示 `[WARN]`）。Windows 寫入的路徑是 `D:/AI_Workspace/AGENTS.md`，Linux／macOS 是 `~/AI_Workspace/AGENTS.md`：
+  （Linux／macOS／sandbox 請將 `"command"` 改為 `"python3 hooks/ag_stop_card_guard.py"`）
+- OpenCode 另外建立 `~/.config/opencode/opencode.jsonc`（不存在才建立；已存在只檢查，缺少設定時顯示 `[WARN]`）。Windows 寫入的路徑是 `D:/AI_Workspace/AGENTS.md`，Linux／macOS 是 `~/AI_Workspace/AGENTS.md`（`general` 與 `sandbox` 僅建 `git push` 權限詢問，不綁個人路徑）：
   ```jsonc
   {
     "$schema": "https://opencode.ai/config.json",
@@ -177,7 +186,7 @@ flowchart TB
 
 ```mermaid
 flowchart LR
-  E["① 改倉庫裡的檔案<br/>（不要改安裝後的 CLAUDE.md / GEMINI.md / AGENTS.md）"] --> V["② 照 AGENTS.md<br/>跑驗證"] --> R["③ 重新執行<br/>install.bat"] --> P["④ commit、推送 GitHub"] --> B["⑤ 公司開發機推送 .bundle<br/>→ 管制機拉取後再安裝"]
+  E["① 改倉庫裡的檔案<br/>（不要改安裝後的 CLAUDE.md / GEMINI.md / AGENTS.md）"] --> V["② 照 AGENTS.md<br/>跑驗證"] --> R["③ 重新執行<br/>install.bat"] --> P["④ commit、推送 GitHub"] --> B["⑤ 管制機拉取後再安裝<br/>（日間直連 GitHub，或經 .bundle 備援）"]
 ```
 
 - 改的是範本（`templates/`）時，還要到各專案把標記之間的區塊**整段替換**（見第六節）。
@@ -194,7 +203,7 @@ flowchart LR
 
 ### 公司專案規則（`templates/AGENTS_company.md`）
 
-- 內網、發布、防毒相容（含禁止 VBS 呼叫 `Shell.Application`）與除錯回報寫在各公司專案 `AGENTS.md` 的「公司專案規則」標記區塊內（版本提醒機制見全域規則第 2 節）。
+- 內網、NAS Docker 容器、發布、防毒相容（含禁止 VBS 呼叫 `Shell.Application`）與除錯回報寫在各公司專案 `AGENTS.md` 的「公司專案規則」標記區塊內（版本提醒機制見全域規則第 2 節）。
 - **修改時**：改範本標記之間的內容並更新版本日期，再到每個公司專案整段替換；專案特有內容寫在標記外面。
 
 ### 逆向分析規則（`templates/AGENTS_reverse.md`）
@@ -205,13 +214,14 @@ flowchart LR
 
 ### 各台電腦與個人跨機規則（`machine_rules/`）
 
-- `personal.md`：個人三機分工、GitSync 與 `.bundle` 跨機同步、Python 3.11 補充與 `google.cloud_oauth.relay` 阻擋（在 `home`／`dev`／`controlled` 模式自動附加；`general` 通用模式不載入）。
+- `personal.md`：個人三機分工、GitSync 與 `.bundle` 跨機同步、Python 3.11 補充與 `google.cloud_oauth.relay` 阻擋（在 `home`／`dev`／`controlled` 模式自動附加；`general` 與 `sandbox` 不載入）。
 - `controlled.md`：管制機專屬限制（防毒行為監控、禁止 VBS 呼叫 `Shell.Application`、無管理員權限安裝、PowerShell 5.1 語法、外網連線限制速覽與 Codex 生圖限制）。開發機不受此限。
+- `sandbox.md`：雲端 Linux 沙盒非 root 權限、Proxy 代理、無 Localhost 直連與 UI Artifact 預覽、即時落盤與子代理限制。
 - 要給某台加專屬規則，新增 `machine_rules/<電腦代號>.md` 即可，安裝腳本會自動附加。
 
 ### 專案的檔案
 
-各檔案用途與建立時機見全域規則第 5 節（開新專案範本在 `templates/`）。
+開新專案從 `templates/` 複製對應範本（公司專案用 `AGENTS_company.md`、逆向分析用 `AGENTS_reverse.md`），舊專案缺少時補上；各檔案用途見全域規則第 5 節。
 
 新專案的流程：
 
@@ -225,8 +235,8 @@ flowchart LR
 
 ### 日常開發體驗（免記指令，全靠互動式提問卡片）
 
-- **不需背 `/plan`、`/grill-me` 等指令**：直接用白話輸入需求（維持 Vibe Coding）。當任務屬於新規劃、有 2 種以上做法，或會修改 3 個以上檔案／跨檔案連動／單檔大改時，全域規則會強制 AI 先跳出選擇題卡片（`ask_question`／`AskUserQuestion`／`question`／`request_user_input`）。
-- **一張卡片對齊三件事**：卡片會一次問齊 **① 規劃方案與預計影響檔案**（首項標推薦並附白話優缺點）、**② 自我迴圈驗證方式**（改完自動跑測試修到過為止），以及在任務合適時動態加問 **③ 是否派子代理（Subagent）分工或唯讀挑錯**。
+- **不需背 `/plan`、`/grill-me` 等指令**：直接用白話輸入需求（維持 Vibe Coding）。當任務屬於新規劃、有 2 種以上做法，或會修改 3 個以上檔案／跨檔案連動／單檔大改／觸及設計定案或 EGM 關鍵字時，全域規則會強制 AI 先跳出選擇題卡片（`ask_question`／`AskUserQuestion`／`question`／`request_user_input`）。
+- **一張卡片對齊決策**：卡片會一次問齊 **① 規劃方案與預計影響檔案**（首項標推薦並附白話優缺點）、**② 自我迴圈驗證方式**（改完自動跑測試修到過為止），並依情境動態加問 **③ 是否派子代理分工或唯讀挑錯（含高風險建議 OpenCode 與大模組提示 `/swarm`）**、**④ 是否啟動 EGM 技能（預設略過省額度）**。
 - **已明確指定改法的小修改**（例如改一句文字、調按鈕位置）：直接輸入需求即可，AI 不會跳卡片打擾。
 
 ---
@@ -250,10 +260,10 @@ flowchart LR
 
 1. 請 AI：「重新查證 `docs/coding_agent_features_table.md`」。AI 照第六節的官方網址逐頁對照，只改有變動的列，並更新該列與開頭的查證日期。
 2. 有變動的列，對照第三節「依賴本表的規則」，修改對應的規則檔。
-3. 在 Claude Code 執行一次 `/doctor prompt-audit`（需 v2.1.283 以上），自動檢查規則檔有沒有過時、矛盾或引用不存在的內容。
+3. 在 Claude Code 執行 `/doctor prompt-audit`（需 v2.1.283 以上），或在任一工具執行全域技能 `/prompt-audit`（搭配 `audit_scanner.py` 靜態快篩），自動檢查規則檔與技能檔有無過時高壓寫法、矛盾、失效路徑或超過單檔 24KB／200 行上限。
 4. 照第五節「修改規則」重新安裝、提交。
 
-- AI 處理規則檔、Skill、Hook 設定時，發現上次全面查證已超過 1 個月，會提醒你（全域規則第 5 節）。
+- AI 處理規則檔、Skill、Hook 設定時，發現上次全面查證已超過 1 個月，會提醒你（或由本機每月定期巡檢 Automation 協助）。
 - 要加入新的 coding agent 時，照該檔第四節的步驟做。
 
 ---
@@ -267,8 +277,8 @@ flowchart LR
 | 用途 | 指令 | 開發機（Windows／Ubuntu） | 管制機 |
 |---|---|---|---|
 | AI 寫程式 | `claude`（Claude Code）、`agy`（Antigravity）、`codex`（Codex）、`opencode`（OpenCode，支援 `opencode run` 背景子代理；未在 PATH 時用桌面 App） | 都要（`npm i -g @opencode/cli`） | Antigravity、`opencode`（免安裝獨立版，限用免費模型；無法使用 Claude Code、Codex） |
-| 版控 | `git`、`git-lfs`、`gh` | 都要 | 只用 GitSync 內附 PortableGit；`gh` 不需要（連不到 GitHub） |
-| Python | `python`（3.11）、`pip`、`uv` | 都要；Ubuntu 用 `uv` 取得 3.11 | 有 `py -3.11`；`uv` 未確認 |
+| 版控 | `git`、`git-lfs`、`gh` | 都要 | GitSync 內附 PortableGit 與免安裝版 `gh`；防火牆於上班時間 `07:30~17:30` 開放 `github.com`／`api.github.com`，但依賴 `objects.githubusercontent.com` 的 `git-lfs`／`gh release download` 仍受限 |
+| Python | `python`（3.11）、`pip`、`uv` | 都要；Ubuntu 用 `uv` 取得 3.11 | 有 `py -3.11`（與 `3.12`，尚無 `3.13`）；`uv` 未確認 |
 | Node.js | `node`、`npm`、`npx` | 都要 | 不安裝（官方安裝檔需管理員權限） |
 | 雲端部署 | `wrangler`（Cloudflare，`npm i -g`）、`gcloud`／`gsutil`／`bq`（Google Cloud SDK） | 需要時安裝 | 不安裝（連線未確認） |
 | 雲端運算 | `colab`（Google Colab，`uv tool install google-colab-cli --python 3.12`） | Ubuntu 需要時安裝／Windows 不支援 | 不安裝（連線未確認、需 Python 3.12） |
@@ -380,7 +390,7 @@ flowchart LR
 
 ### Python 升級評估
 
-Python 3.11 的安全更新到 2027-10 結束（已查證：官方 PEP 664 `https://peps.python.org/pep-0664/`），2027 上半年要評估升級到 3.12／3.13：
+Python 3.11 的安全更新到 2027-10 結束（已查證：官方 PEP 664 `https://peps.python.org/pep-0664/`）；NAS Docker 容器鏡像採用 `Python 3.13`（PEP 719 安全更新至 2029-10），管制機本機實測目前有 3.11 與 3.12（尚無 3.13）。2027 上半年要評估將管制機與公司專案統一升級到 3.12／3.13 時：
 
 1. 在開發機用測試用的 `.venv` 跑過主要專案（公司專案優先）。
 2. 確認管制機能以「僅限目前使用者」安裝新版本（不需要管理員權限）。

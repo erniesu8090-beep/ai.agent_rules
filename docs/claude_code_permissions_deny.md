@@ -3,7 +3,7 @@
 > 整併自：原 claude_code_block_cyber_files.md（2026-10-29）；原始版本已刪除，需要時查 Git 歷史。
 > 目的：避免 Claude Code 讀到資安／逆向／網路代理相關內容時觸發安全機制、中斷整個對話；同時保留其他 coding agent 的處理路徑。
 > 適用：Claude Code；其他工具（Antigravity、Codex、OpenCode）的對應設定見 `docs/coding_agent_features_table.md`。
-> 最後整理：2026-10-31
+> 最後整理：2026-11-26
 
 ---
 
@@ -40,17 +40,17 @@ This request triggered cyber-related safeguards
 | 機制會看整段對話累積的內容，一次誤判可能擋掉整個對話 | https://claudeissues.com/issue/63751-bug-aup-cyber-safeguard-false-positives-on-legitimate-own-software-hardening-one |
 | 官方說明防護刻意設得廣，有時會誤判正當資安工作 | https://arte.itlibra.com/en/articles/claude-code-safeguards-flagged-this-message |
 | 有 Cyber Verification Program 可申請，但有人回報通過後仍被擋 | https://claudeissues.com/issue/86352-bug-claude-code-cybersecurity-safeguards-blocking-approved-cyber-verification-pr |
-| `permissions.deny` 的 `Read(...)` 只涵蓋 Claude 內建檔案工具；相對路徑以**啟動資料夾**為起點，跨資料夾要改用 `//` 絕對路徑 | https://code.claude.com/docs/en/large-codebases |
+| `permissions.deny` 的 `Read(...)` 只涵蓋 Claude 內建檔案工具；相對路徑以**啟動資料夾**為起點，文件記載支援 `Read(C:/...)`、`Read(//c/...)` 與 `permissions.blockReadsOutsideWorkingDirectories`（v2.1.327 強化），但仍存路徑解析繞過風險 | https://code.claude.com/docs/en/large-codebases 、https://code.claude.com/docs/en/permissions |
 | `deny` 對 Bash 效力有限：`cat` 可能被擋，改用 Python 一行指令仍可能讀到 | https://www.developersdigest.tech/blog/keep-secrets-away-from-ai-coding-agents-2026 |
 | `/sandbox` 只支援 macOS 與 Linux／WSL2，原生 Windows 不支援，不能用來替代 Windows 的讀取阻擋 | https://code.claude.com/docs/en/security |
-| 觸發後用 `/rewind` 退回、`/feedback` 回報、可申請 CVP | https://code.claude.com/docs/en/troubleshooting |
+| 觸發後用 `/rewind` 退回、`/feedback` 回報、可申請 CVP；官方區分單次 session refusal 與反覆違規導致之帳號停權（可至 `claude.ai/restricted` 申訴） | https://code.claude.com/docs/en/troubleshooting 、https://claude.com/ |
 
 ### 2-3 推測與查不到
 
 - **推測**：用 `deny` 讓檔案內容不進入對話，可降低觸發機會；沒有查到直接驗證成效的來源。
 - **推測**：檔名本身是否會被判斷，不確定。
 - **查不到**：哪一種 `deny` 規則一定不會觸發凍結，官方沒有說明。
-- **查不到**：多次觸發是否會停權，官方條款未見；目前只有使用者回報的推論。
+- **查不到**：單次 session refusal 不自動等同帳號停權（遭停權可至 `claude.ai/restricted` 申訴），但**觸發幾次會停權**之次數門檻，官方條款仍未見；目前只有使用者回報的推論。
 
 ---
 
@@ -127,7 +127,7 @@ This request triggered cyber-related safeguards
 
 ## 六、已知限制（如實告知，不要誇大）
 
-- **啟動資料夾限制（最重要）**：`Read(./**/<資料夾>/**)` 的 `./` 以啟動資料夾為起點；從別的專案啟動可能擋不到。Windows 磁碟機搭配 `//` 絕對路徑的寫法查無官方範例，**跨資料夾保護尚待實測**。
+- **啟動資料夾限制（最重要）**：`Read(./**/<資料夾>/**)` 的 `./` 以啟動資料夾為起點；從別的專案啟動可能擋不到。文件雖載有 `Read(C:/...)`、`Read(//c/...)` 與 `permissions.blockReadsOutsideWorkingDirectories`，但仍存路徑解析繞過風險，**跨資料夾保護尚待實測**。
 - `deny` 只管 Claude 內建讀檔工具，**不保證**擋得住 Bash／Python 繞道。
 - 使用者自己貼進對話的內容，不受設定保護。
 - 這套做法的成效屬**推測**，需要實測確認。
@@ -146,5 +146,6 @@ This request triggered cyber-related safeguards
 | 2026-10-25 | 補官方相對路徑起點、`/sandbox` 平台限制、`/rewind` 與 CVP 處置 |
 | 2026-10-29 | 整併為精簡實戰版，原文封存至 `docs/archive/claude_code_block_cyber_files_2026-10-25.md` |
 | 2026-10-31 | 原始封存檔刪除，未收錄的二手來源移至 verification_sources.md |
+| 2026-11-22 | 依官網 `permissions` 文件補註 `Read(C:/...)`／`Read(//c/...)`、`blockReadsOutsideWorkingDirectories`、`claude.ai/restricted` 申訴與多次停權門檻查不到 |
 
-主要來源：Claude Code 官方 large codebases、security、troubleshooting 文件，以及第 2-2 節列出的問題回報頁。官方文件改版時，先重新查證再改本檔。
+主要來源：Claude Code 官方 large codebases、permissions、security、troubleshooting 文件與官方支援說明，以及第 2-2 節列出的問題回報頁。官方文件改版時，先重新查證再改本檔。

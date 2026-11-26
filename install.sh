@@ -5,12 +5,30 @@
 #     -> ~/.gemini/GEMINI.md（Antigravity）
 #     -> ~/.codex/AGENTS.md（Codex）
 #     -> ~/.config/opencode/AGENTS.md（OpenCode）
-# 開發機／通用機（home／dev／general）另外設定 Claude Code 同時讀 CLAUDE.md 與 AGENTS.md（~/.claude/settings.json，不存在才建立）、啟用 Codex 一般模式提問卡片（~/.codex/config.toml），以及 Antigravity 防漏圖卡 Stop Hook（~/.gemini/config/hooks.json）
+# 非管制機（home／dev／general／sandbox）另外設定 Claude Code 同時讀 CLAUDE.md 與 AGENTS.md（~/.claude/settings.json，不存在才建立）、啟用 Codex 一般模式提問卡片（~/.codex/config.toml），以及 Antigravity 防漏圖卡 Stop Hook（~/.gemini/config/hooks.json）
 # OpenCode 全域設定 ~/.config/opencode/opencode.jsonc（不存在才建立）
 # 既有檔案會先備份成 *.YYYYMMDD_HHMMSS.bak
-# 用法：sh install.sh [home|dev|controlled|general]（不帶參數則詢問）
+# 用法：sh install.sh [home|dev|controlled|general|sandbox]（不帶參數則詢問）
 set -e
 cd "$(dirname "$0")"
+
+pause_on_exit=0
+if [ -z "$1" ] && [ -t 0 ]; then
+    pause_on_exit=1
+fi
+tmp=""
+cleanup() {
+    if [ -n "$tmp" ]; then
+        rm -f "$tmp"
+    fi
+    if [ "$pause_on_exit" -eq 1 ]; then
+        printf "\n按 Enter 結束..."
+        read -r _ || true
+    fi
+}
+trap cleanup EXIT
+trap 'pause_on_exit=0; exit 130' INT TERM
+
 if [ ! -f "global_rules.md" ]; then
     echo "[ERROR] 找不到 global_rules.md"
     exit 1
@@ -19,27 +37,32 @@ ts=$(date +%Y%m%d_%H%M%S)
 
 machine="$1"
 if [ -z "$machine" ]; then
-    echo "這台是哪一台電腦？ [1] home 住家開發機  [2] dev 公司開發機  [3] controlled 管制機  [4] general 通用／同事電腦"
-    printf "請輸入 1、2、3 或 4："
+    echo "這台是哪一台電腦？ [1] home 住家開發機  [2] dev 公司開發機  [3] controlled 管制機  [4] general 通用／同事電腦  [5] sandbox 雲端沙盒／遠端代理"
+    printf "請輸入 1、2、3、4 或 5："
     read -r ans
     case "$ans" in
-        1) machine=home ;; 2) machine=dev ;; 3) machine=controlled ;; 4) machine=general ;;
-        *) echo "[ERROR] 請輸入 1、2、3 或 4"; exit 1 ;;
+        1) machine=home ;; 2) machine=dev ;; 3) machine=controlled ;; 4) machine=general ;; 5) machine=sandbox ;;
+        *) echo "[ERROR] 請輸入 1、2、3、4 或 5"; exit 1 ;;
     esac
 fi
 case "$machine" in
-    home|dev|controlled|general) ;;
+    home|dev|controlled|general|sandbox) ;;
     *) echo "[ERROR] 不認得的電腦代號：$machine"; exit 1 ;;
 esac
 
 src=$(mktemp)
 tmp="$src"
-trap 'rm -f "$tmp"' EXIT
 {
     cat global_rules.md
-    if [ "$machine" != general ]; then
+    if [ "$machine" != general ] && [ "$machine" != sandbox ]; then
         [ -f "machine_rules/personal.md" ] && { printf '\n'; cat "machine_rules/personal.md"; }
         [ -f "machine_rules/$machine.md" ] && { printf '\n'; cat "machine_rules/$machine.md"; }
+    elif [ "$machine" = sandbox ]; then
+        if [ -f "machine_rules/sandbox.md" ]; then
+            printf '\n'; cat "machine_rules/sandbox.md"
+        else
+            echo "[WARN] 找不到 machine_rules/sandbox.md，已略過沙盒專屬規則" >&2
+        fi
     fi
     printf '\n---\nTHIS MACHINE: %s\n' "$machine"
 } > "$src"
@@ -65,35 +88,6 @@ install_to "$HOME/.gemini" GEMINI.md
 install_to "$HOME/.codex" AGENTS.md
 install_to "$HOME/.config/opencode" AGENTS.md
 
-deploy_skills() {
-    base_dst="$1"
-    [ -d "templates/skills" ] || return 0
-    (
-        cd "templates/skills"
-        find . -type f | while read -r f; do
-            rel="${f#./}"
-            sfile="$rel"
-            dst="$base_dst/$rel"
-            mkdir -p "$(dirname "$dst")"
-            if [ -f "$dst" ]; then
-                if cmp -s "$sfile" "$dst"; then
-                    echo "[SKIP] $dst 已是最新"
-                    continue
-                fi
-                cp "$dst" "$dst.$ts.bak"
-                echo "[BACKUP] $dst.$ts.bak"
-            fi
-            cp "$sfile" "$dst"
-            echo "[OK] $dst"
-        done
-    )
-}
-
-deploy_skills "$HOME/.claude/skills"
-deploy_skills "$HOME/.gemini/config/skills"
-deploy_skills "$HOME/.codex/skills"
-deploy_skills "$HOME/.config/opencode/skills"
-
 if [ "$machine" != controlled ]; then
     if command -v claude >/dev/null 2>&1; then
         cver=$(claude --version 2>/dev/null || true)
@@ -101,7 +95,7 @@ if [ "$machine" != controlled ]; then
     fi
     cfg="$HOME/.claude/settings.json"
     if [ -f "$cfg" ]; then
-        if [ "$machine" = general ]; then
+        if [ "$machine" = general ] || [ "$machine" = sandbox ]; then
             if grep -q '"agents-md@builtin"' "$cfg" && grep -q "cc-plugin-agents-md@builtin" "$cfg"; then
                 echo "[SKIP] $cfg 已設定完成"
             else
@@ -115,7 +109,7 @@ if [ "$machine" != controlled ]; then
             fi
         fi
     else
-        if [ "$machine" = general ]; then
+        if [ "$machine" = general ] || [ "$machine" = sandbox ]; then
             cat > "$cfg" <<'JSON'
 {
   "pluginConfigs": {
@@ -223,7 +217,7 @@ fi
 # OpenCode 全域設定：工作區規則（在家目錄外時不會自動載入）＋敏感路徑阻擋
 ocfg="$HOME/.config/opencode/opencode.jsonc"
 if [ -f "$ocfg" ]; then
-    if [ "$machine" = general ]; then
+    if [ "$machine" = general ] || [ "$machine" = sandbox ]; then
         if grep -q "git push" "$ocfg"; then
             echo "[SKIP] $ocfg 已設定完成"
         else
@@ -237,7 +231,7 @@ if [ -f "$ocfg" ]; then
         fi
     fi
 else
-    if [ "$machine" = general ]; then
+    if [ "$machine" = general ] || [ "$machine" = sandbox ]; then
         cat > "$ocfg" <<'JSON'
 {
   "$schema": "https://opencode.ai/config.json",
@@ -272,7 +266,7 @@ elif [ -f "../../ai.agent_skills/deploy_global_skills.sh" ]; then
 fi
 if [ -n "$skills_sh" ]; then
     echo "[INFO] 偵測到 ai.agent_skills，觸發全域技能部署..."
-    sh "$skills_sh" || echo "[WARN] 全域技能部署回傳非零代碼"
+    sh "$skills_sh" < /dev/null || echo "[WARN] 全域技能部署回傳非零代碼"
 fi
 
 echo "[DONE] 已安裝為 $machine，請重新啟動 Claude Code / Antigravity / Codex / OpenCode 以載入新規則"

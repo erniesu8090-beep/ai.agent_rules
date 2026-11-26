@@ -1,0 +1,57 @@
+# ==============================================================================
+# Docker 映像檔建置排除規則 (.dockerignore)
+# 放置路徑：<專案根目錄>/.dockerignore
+# 目的：避免本地環境、快取、日誌與機密檔案被打包進 Docker Image，加速建置並保護安全
+# ==============================================================================
+
+# 機密與環境變數（線上請於 NAS 宿主機根目錄獨立放置 .env）
+.env
+.env.*
+!.env.example
+
+# 本地 Python 虛擬環境與執行檔
+.venv/
+runtime/
+portable/
+deploy/portable/
+
+# 執行日誌與臨時產出
+logs/
+output/
+temp/
+scratch/
+
+# 測試腳本與樣例資料
+tests/
+example/
+sample_data/
+
+# 備份與資源回收目錄
+data/.backup/
+data/.trash/
+.trash/
+.backup/
+
+# Python 快取與編譯檔
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# 壓縮包與安裝封裝包
+*.zip
+*.tar.gz
+*.whl
+
+# 版本控制與 IDE 設定
+.git/
+.vscode/
+.idea/
+.agents/
+PROGRESS.md
+
+# 系統快取與捷徑
+Thumbs.db
+desktop.ini
+~$*
+*.lnk

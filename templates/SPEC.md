@@ -43,7 +43,7 @@
 - 開發在：住家開發機／公司開發機
 - 執行在：例：住家開發機（見全域規則「電腦環境」）
 - 公司專案：同事電腦要不要免安裝
-- AI 工具安全分流：是否套用 Claude Code 資安防凍結規則（是：交由 Antigravity 等其他 agent 處理，並加入 `permissions.deny`／否：一般專案）
+- AI 工具安全分流（Claude Code 用）：由 AI 以選擇題卡片詢問是否套用資安防凍結規則（詳見 `ai.agent_rules/guidelines/claude_code_rules.md`；是：交由 Antigravity 等其他 agent 處理，並加入 `permissions.deny`／否：一般專案）
 
 ## 六、技術選擇
 

@@ -1,0 +1,35 @@
+# ==============================================================================
+# NAS Docker Compose 服務設定檔範本
+# 放置路徑：<專案根目錄>/deploy/nas/docker-compose.yml
+# 啟動方式：於 Synology Container Manager 專案管理指定本目錄建立，或在 NAS 目錄執行 docker compose up -d
+# ==============================================================================
+
+services:
+  app-service:
+    # 專案建置設定：context 指向專案根目錄 (../../)，指定本目錄下的 Dockerfile
+    build:
+      context: ../..
+      dockerfile: deploy/nas/Dockerfile
+    # 容器名稱：請改為專案專屬名稱（全小寫與連字號，例：sample-project-service）
+    container_name: sample-project-service
+    # 故障或 NAS 重開機時自動重啟
+    restart: unless-stopped
+    # 連接埠映射：格式為 "<HOST_PORT>:<CONTAINER_PORT>"
+    # 注意：NAS 宿主機的 8080 常被其他服務佔用，請依序規劃（例如 8081:8080、8082:8080）
+    ports:
+      - "8081:8080"
+    environment:
+      - PYTHONUNBUFFERED=1
+    # 資料卷掛載 (Volumes)：
+    # 推薦採「精準目錄掛載模式」，既能享有程式碼更新免重建映像檔的便利，又能妥善持久化產出資料
+    volumes:
+      # 程式碼熱更新掛載（若程式碼更新，重啟容器即可載入新代碼）
+      - ../../core:/app/core
+      - ../../main.py:/app/main.py
+      - ../../static:/app/static
+      # 持久化資料與產出目錄（容器重置或刪除時，NAS 上的資料不會丟失）
+      - ../../output:/app/output
+      - ../../logs:/app/logs
+      - ../../data:/app/data
+      # 專案環境變數檔（唯讀掛載，避免容器內部誤修改宿主機 .env）
+      - ../../.env:/app/.env:ro

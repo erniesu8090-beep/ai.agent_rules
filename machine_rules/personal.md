@@ -1,6 +1,6 @@
 # 個人跨機環境與工作流規則（home / dev / controlled）
 
-> 由安裝腳本於 `home`、`dev`、`controlled` 附加（`general` 不載入），定義多機分工與同步；本體在 `ai.agent_rules/machine_rules/personal.md`。
+> 由安裝腳本於 `home`、`dev`、`controlled` 附加（`general`、`sandbox` 不載入），定義多機分工與同步；本體在 `ai.agent_rules/machine_rules/personal.md`。
 
 ## 1. 個人電腦環境與分工
 | 代號 | 電腦 | AI 工具 | 軟體 | 網路 | 用途 |
@@ -13,7 +13,7 @@
 - `home` 與 `dev` 合稱「開發機」（無內網），不受管制機限制，但寫給管制機或同事機的程式須相容。管制機連線表在 `machine_rules/controlled.md`（僅裝管制機，開發機無此檔勿找）；管制機用未確認外網服務先請使用者實測。
 
 ## 2. 跨電腦同步與個人環境補充
-- **跨機同步 GitSync**：只傳已 commit 的 `main`；Win 版 `D:\AI_Workspace\bundle.gitsync`（`GitSync_GUI.vbs`）、Ubuntu 版 `~/AI_Workspace/gitsync_ubuntu`（`./GitSync.sh`，只走 GitHub）；版控優先指示 GitSync 按鈕（停損不勾改壞檔），手動 git 備用；見 GitSync `README.md`。
+- **跨機同步 GitSync**：只傳已 commit 的 `main`；Win 版 `D:\AI_Workspace\bundle.gitsync`（`GitSync_GUI.vbs`）、Ubuntu 版 `~/AI_Workspace/gitsync_ubuntu`（`./GitSync.sh`）。管制機於日間開放時段（`07:30~17:30`）可直接走 GitHub 同步，非上班時段與開發機中繼保留 `.bundle` 備援；版控優先指示 GitSync 按鈕（停損先不勾改壞檔），細節見 GitSync `README.md`。
 - **工作區結構**：專案放 `D:\AI_Workspace`（Ubuntu `~/AI_Workspace`）下兩層內，各機相對位置才一致；不同資料夾專案禁同名（`.bundle` 以資料夾命名）。公司專案上一層即「公司工作區」。
-- **Python 3.11 補充**：個人專案以金融交易與遊戲輔助為主（現有 Python 3）；公司專案固定 3.11 系列，`requirements.txt` 全鎖版，Ubuntu 用 `uv venv --python 3.11 --seed .venv` 建（不動系統 Python）。3.11 安全更新至 2027-10（PEP 664），升級前不換版、不用無 GIL 版（`3.13t`／`3.14t`）；過 2027-01 未升提醒（見 README「Python 升級評估」）。
+- **Python 3.11 補充**：個人專案以金融交易與遊戲輔助為主（現有 Python 3）；公司專案固定 3.11 系列，`requirements.txt` 全鎖版，Ubuntu 用 `uv venv --python 3.11 --seed .venv` 建（不動系統 Python）。3.11 安全更新至 2027-10（PEP 664），升級前不換版、不用無 GIL 版（`3.13t`／`3.14t`）；過 2027-01 未升提醒（見 README「Python 升級評估」）。NAS Docker 容器專案則採鏡像內 Python 3.13（見 `templates/deploy_nas/`）。
 - **敏感專案阻擋**：`google.cloud_oauth.relay` 已入 `~/.claude/settings.json` 的 `permissions.deny` 與 `~/.config/opencode/opencode.jsonc`，嚴禁 Claude Code 讀取或繞過。

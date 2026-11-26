@@ -3,7 +3,7 @@
 > 整併自：原 rule_cleanup_plan、rule_cleanup_round2_plan、improvement_list_done、harness_improvement（2026-10-29）；原始版本已刪除，需要時查 Git 歷史。
 > 用途：規則越加越多、同一件事寫在好幾個檔案、AI 開始漏看時，照這份流程整理。可交給任何 coding agent 執行。
 > 原則：**先盤點、再稽核、經確認才動手、每次只改一批。**
-> 最後整理：2026-10-31
+> 最後整理：2026-11-26
 
 ---
 
@@ -24,10 +24,11 @@
 |---|---|
 | 每次對話都要遵守的硬性限制、AI 推斷不出來的事實 | `global_rules.md`（200 行內） |
 | 各家工具功能、版本、載入機制 | `docs/coding_agent_features_table.md` |
-| 查表、清單、操作步驟 | `README.md` |
+| 查表、清單、操作步驟（含「專案的檔案」定義表） | `README.md` |
 | 公司專案規則 | `templates/AGENTS_company.md` 標記區塊 |
 | 逆向分析規則 | `templates/AGENTS_reverse.md` 標記區塊 |
 | 只適用某台電腦 | `machine_rules/<代號>.md` |
+| 共用規範、編碼避坑與備用指引 | `guidelines/` |
 | 進度、決策、踩過的坑 | `PROGRESS.md` |
 | 原理、研究、長期參考 | `docs/`（本目錄其他文件） |
 
@@ -81,6 +82,12 @@ Get-ChildItem -Path . -Recurse -File -Include CLAUDE.md,AGENTS.md,SKILL.md |
 
 > PowerShell 5.1 讀 UTF-8 檔案時，必要時加 `-Encoding UTF8`，否則中文行數可能算錯。
 
+- **自動快篩（推薦，跨平台）**：直接輸入 `/prompt-audit` 觸發全域健檢技能，或手動執行 `ai.agent_skills` 部署的全域靜態快篩腳本，一次完成工作區與全域設定檔盤點、UTF-8 編碼、單檔 24,000 bytes 上限、常駐 20,000 tokens 預算、YAML `trigger` 無聲丟棄、專案 `AGENTS.md` 200 行／已知的坑 10 條上限、失效路徑與舊模型高壓贅詞（如 `CRITICAL`）快篩：
+  ```powershell
+  py -3.11 "$env:USERPROFILE\.gemini\config\skills\prompt-audit\scripts\audit_scanner.py" --workspace .
+  ```
+  （有專案 `.venv` 時亦可改用 `.venv\Scripts\python.exe`。）
+
 ### Step 2：稽核
 
 照 `docs/ai_agent_engineering.md` 第六節的 A～J 清單逐項檢查，每項回答「通過／部分／未通過／不適用」，附檔名與行號。
@@ -111,7 +118,7 @@ Get-ChildItem -Path . -Recurse -File -Include CLAUDE.md,AGENTS.md,SKILL.md |
 
 ### Step 6：驗證
 
-- 規則檔能被工具載入：Claude Code 用 `/context` 或 `/memory`；其他工具查官方方式。
+- 規則檔與技能能被工具載入且未超標：Claude Code 用 `/context`、`/memory` 或 `/doctor prompt-audit`；Antigravity CLI 用 `/context` 與 `/skills reload`，桌面版／IDE 用 `usage-monitor` 外掛檢視上下文水位與 `/prompt-audit`（`audit_scanner.py` 確認無單檔 > 24KB 截斷或 YAML 無聲丟棄）。
 - 用一個小任務實測：先給計畫、做完實際執行、回報輸出。
 - 有禁讀設定時，用**測試檔**驗證會被擋，不要拿真正的敏感檔測。
 - 回報「還有哪些沒辦法驗證」。
@@ -132,7 +139,7 @@ Get-ChildItem -Path . -Recurse -File -Include CLAUDE.md,AGENTS.md,SKILL.md |
 
 ```powershell
 # 以本次整併為例：舊檔名不應再出現在現行文件中
-Select-String -Path README.md,AGENTS.md,PROGRESS.md,global_rules.md,docs\*.md `
+Select-String -Path README.md,AGENTS.md,PROGRESS.md,global_rules.md,docs\*.md,guidelines\*.md,machine_rules\*.md,templates\*.md `
   -Pattern '舊檔名' -SimpleMatch
 ```
 
@@ -145,8 +152,8 @@ Select-String -Path README.md,AGENTS.md,PROGRESS.md,global_rules.md,docs\*.md `
 在 `D:\AI_Workspace\ai.agent_rules` 下：
 
 ```powershell
-# 1. 公司資訊外洩（Git Bash）
-grep -rnE '\\\\[A-Za-z0-9]|([0-9]{1,3}\.){3}[0-9]{1,3}|[0-9]{6}' --exclude-dir=.git .
+# 1. 公司資訊外洩（Git Bash；排除 deploy_nas 的 0.0.0.0 與 \\<NAS_IP> 範例佔位值）
+grep -rnE '\\\\[A-Za-z0-9]|([0-9]{1,3}\.){3}[0-9]{1,3}|[0-9]{6}' --exclude-dir=.git --exclude-dir=deploy_nas .
 # 預期：沒有輸出
 
 # 2. install.bat 非 ASCII（Git Bash）
@@ -165,16 +172,17 @@ $t = "$env:TEMP\agentrules_test"
 Remove-Item -Recurse -Force $t -ErrorAction SilentlyContinue
 New-Item -ItemType Directory $t | Out-Null
 $env:USERPROFILE = $t
-cmd /c "install.bat controlled < nul"   # 預期：4 行 rules [OK] + 1 行 opencode.jsonc [OK] +（若平行存在 ai.agent_skills）skills [OK]
-cmd /c "install.bat controlled < nul"   # 預期：5 行 rules/cfg [SKIP] + skills [SKIP]
-cmd /c "install.bat dev < nul"          # 預期：4 組 [BACKUP]+[OK] + settings.json [OK] + opencode.jsonc [SKIP] + skills [SKIP]
-cmd /c "install.bat dev < nul"          # 預期：6 行 rules/cfg [SKIP] + skills [SKIP]
-cmd /c "install.bat general < nul"      # 預期：4 組 [BACKUP]+[OK] + settings.json [SKIP] + opencode.jsonc [SKIP] + skills [SKIP]
-Get-Content "$t\.claude\CLAUDE.md" -Tail 1          # 預期：THIS MACHINE: general
-Get-Content "$t\.gemini\GEMINI.md" -Tail 1          # 預期：THIS MACHINE: general
-Get-Content "$t\.codex\AGENTS.md" -Tail 1           # 預期：THIS MACHINE: general
-Get-Content "$t\.config\opencode\AGENTS.md" -Tail 1 # 預期：THIS MACHINE: general
-Get-Content "$t\.config\opencode\opencode.jsonc"    # 預期：含 instructions 與 permissions
+cmd /c "install.bat controlled < nul"   # 預期：4 行 rules [OK] + 1 行 opencode.jsonc [OK]（不建 hooks.json）
+cmd /c "install.bat controlled < nul"   # 預期：5 行 rules/cfg [SKIP]
+cmd /c "install.bat dev < nul"          # 預期：4 組 [BACKUP]+[OK] + settings.json [OK] + config.toml [OK] + hooks 腳本與 hooks.json [OK] + opencode.jsonc [SKIP]
+cmd /c "install.bat dev < nul"          # 預期：9 行 rules/cfg/hooks [SKIP]
+cmd /c "install.bat general < nul"      # 預期：4 組 [BACKUP]+[OK] + settings.json [SKIP] + config.toml [SKIP] + hooks 腳本與 hooks.json [SKIP] + opencode.jsonc [SKIP]
+cmd /c "install.bat sandbox < nul"      # 預期：4 組 [BACKUP]+[OK] + settings/config.toml/hooks/opencode [SKIP]（因前次已建）
+Get-Content "$t\.claude\CLAUDE.md" -Tail 1          # 預期：THIS MACHINE: sandbox
+Get-Content "$t\.gemini\GEMINI.md" -Tail 1          # 預期：THIS MACHINE: sandbox
+Get-Content "$t\.codex\AGENTS.md" -Tail 1           # 預期：THIS MACHINE: sandbox
+Get-Content "$t\.config\opencode\AGENTS.md" -Tail 1 # 預期：THIS MACHINE: sandbox
+Get-Content "$t\.config\opencode\opencode.jsonc"    # 預期：含 instructions 與 permissions（dev 建置時）
 Remove-Item -Recurse -Force $t
 ```
 
@@ -229,7 +237,7 @@ Remove-Item -Recurse -Force $t
 |---|---|
 | 每次 AI 犯錯 | 判斷是不是「讀程式碼推斷不出來的坑」；是才提案補規則 |
 | 每完成一個功能 | commit；更新 `PROGRESS.md` |
-| 每月 | 重新查證工具對照表、跑 `/doctor prompt-audit`、檢查規則行數 |
+| 每月 | 重新查證工具對照表、跑 `/doctor prompt-audit` 或全域技能 `/prompt-audit`（含 `audit_scanner.py` 快篩）、檢查規則行數與 24KB 上限 |
 | 每季或大改版 | 用本 SOP 做一次 A～J 全面稽核 |
 
 ---

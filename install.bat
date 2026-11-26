@@ -5,13 +5,13 @@ rem     -> %USERPROFILE%\.claude\CLAUDE.md        (Claude Code)
 rem     -> %USERPROFILE%\.gemini\GEMINI.md        (Antigravity)
 rem     -> %USERPROFILE%\.codex\AGENTS.md         (Codex)
 rem     -> %USERPROFILE%\.config\opencode\AGENTS.md (OpenCode)
-rem Dev/General PCs (home/dev/general): also make Claude Code read both CLAUDE.md and AGENTS.md
+rem Dev/General/Sandbox PCs (home/dev/general/sandbox): also make Claude Code read both CLAUDE.md and AGENTS.md
 rem   (%USERPROFILE%\.claude\settings.json, only created if missing),
 rem   enable Codex default-mode request_user_input (%USERPROFILE%\.codex\config.toml),
 rem   and Antigravity Stop hook guard (%USERPROFILE%\.gemini\config\hooks.json)
 rem OpenCode: global config %USERPROFILE%\.config\opencode\opencode.jsonc (only created if missing)
 rem Existing files are backed up as *.YYYYMMDD_HHMMSS.bak before overwrite.
-rem Usage: install.bat [home|dev|controlled|general]   (no argument = ask)
+rem Usage: install.bat [home|dev|controlled|general|sandbox]   (no argument = ask)
 setlocal
 cd /d "%~dp0"
 
@@ -27,19 +27,20 @@ echo   [1] home       - home PC (personal workflow)
 echo   [2] dev        - company personal PC (internet, no intranet)
 echo   [3] controlled - company PC (intranet, restricted install)
 echo   [4] general    - general / colleague PC (standard rules only)
-choice /c 1234 /n /m "Press 1, 2, 3 or 4: "
-if errorlevel 4 (set "MACHINE=general") else if errorlevel 3 (set "MACHINE=controlled") else if errorlevel 2 (set "MACHINE=dev") else (set "MACHINE=home")
+echo   [5] sandbox    - cloud sandbox / remote agent environment
+choice /c 12345 /n /m "Press 1, 2, 3, 4 or 5: "
+if errorlevel 5 (set "MACHINE=sandbox") else if errorlevel 4 (set "MACHINE=general") else if errorlevel 3 (set "MACHINE=controlled") else if errorlevel 2 (set "MACHINE=dev") else (set "MACHINE=home")
 
 :check_machine
-if /i not "%MACHINE%"=="home" if /i not "%MACHINE%"=="dev" if /i not "%MACHINE%"=="controlled" if /i not "%MACHINE%"=="general" (
-    echo [ERROR] Unknown machine "%MACHINE%". Use home, dev, controlled or general.
+if /i not "%MACHINE%"=="home" if /i not "%MACHINE%"=="dev" if /i not "%MACHINE%"=="controlled" if /i not "%MACHINE%"=="general" if /i not "%MACHINE%"=="sandbox" (
+    echo [ERROR] Unknown machine "%MACHINE%". Use home, dev, controlled, general or sandbox.
     goto :fail
 )
 
 rem Build the final rules file: global_rules.md + optional machine rules + machine tag line
 set "SRC=%TEMP%\ai_agent_rules_%RANDOM%.md"
 copy /y "global_rules.md" "%SRC%" >nul || goto :fail
-if /i not "%MACHINE%"=="general" (
+if /i not "%MACHINE%"=="general" if /i not "%MACHINE%"=="sandbox" (
     if exist "machine_rules\personal.md" (
         >>"%SRC%" echo.
         type "machine_rules\personal.md" >>"%SRC%"
@@ -47,6 +48,14 @@ if /i not "%MACHINE%"=="general" (
     if exist "machine_rules\%MACHINE%.md" (
         >>"%SRC%" echo.
         type "machine_rules\%MACHINE%.md" >>"%SRC%"
+    )
+)
+if /i "%MACHINE%"=="sandbox" (
+    if exist "machine_rules\sandbox.md" (
+        >>"%SRC%" echo.
+        type "machine_rules\sandbox.md" >>"%SRC%"
+    ) else (
+        echo [WARN] machine_rules\sandbox.md not found, sandbox rules skipped.
     )
 )
 >>"%SRC%" echo.
@@ -96,22 +105,31 @@ where claude >nul 2>&1 && (
     )
 )
 if exist "%CFG%" (
-    if /i "%MACHINE%"=="general" (
-        findstr /c:"\"agents-md@builtin\"" "%CFG%" >nul && findstr /c:"cc-plugin-agents-md@builtin" "%CFG%" >nul && (
-            echo [SKIP] %CFG% already configured.
-            exit /b 0
-        )
-    ) else (
-        findstr /c:"\"agents-md@builtin\"" "%CFG%" >nul && findstr /c:"cc-plugin-agents-md@builtin" "%CFG%" >nul && findstr /c:"google.cloud_oauth.relay" "%CFG%" >nul && (
-            echo [SKIP] %CFG% already configured.
-            exit /b 0
-        )
+    if /i "%MACHINE%"=="general" goto :settings_check_basic
+    if /i "%MACHINE%"=="sandbox" goto :settings_check_basic
+    findstr /c:"\"agents-md@builtin\"" "%CFG%" >nul && findstr /c:"cc-plugin-agents-md@builtin" "%CFG%" >nul && findstr /c:"google.cloud_oauth.relay" "%CFG%" >nul && (
+        echo [SKIP] %CFG% already configured.
+        exit /b 0
     )
-    echo [WARN] %CFG% exists. Add instructionFiles / permissions.deny manually, see README.
+    goto :settings_warn
+)
+goto :settings_create
+
+:settings_check_basic
+findstr /c:"\"agents-md@builtin\"" "%CFG%" >nul && findstr /c:"cc-plugin-agents-md@builtin" "%CFG%" >nul && (
+    echo [SKIP] %CFG% already configured.
     exit /b 0
 )
+echo [WARN] %CFG% exists. Add instructionFiles manually, see README.
+exit /b 0
+
+:settings_warn
+echo [WARN] %CFG% exists. Add instructionFiles / permissions.deny manually, see README.
+exit /b 0
+
+:settings_create
 >"%CFG%" echo {
-if /i not "%MACHINE%"=="general" (
+if /i not "%MACHINE%"=="general" if /i not "%MACHINE%"=="sandbox" (
     >>"%CFG%" echo   "permissions": {
     >>"%CFG%" echo     "deny": [
     >>"%CFG%" echo       "Read(./**/google.cloud_oauth.relay/**)"
@@ -208,29 +226,36 @@ exit /b 0
 rem OpenCode: workspace rules above the project root + sensitive path block
 set "OCFG=%USERPROFILE%\.config\opencode\opencode.jsonc"
 if exist "%OCFG%" (
-    if /i "%MACHINE%"=="general" (
-        findstr /c:"git push" "%OCFG%" >nul && (
-            echo [SKIP] %OCFG% already configured.
-            exit /b 0
-        )
-    ) else (
-        findstr /c:"AI_Workspace/AGENTS.md" "%OCFG%" >nul && findstr /c:"google.cloud_oauth.relay" "%OCFG%" >nul && findstr /c:"git push" "%OCFG%" >nul && (
-            echo [SKIP] %OCFG% already configured.
-            exit /b 0
-        )
+    if /i "%MACHINE%"=="general" goto :opencode_check_basic
+    if /i "%MACHINE%"=="sandbox" goto :opencode_check_basic
+    findstr /c:"AI_Workspace/AGENTS.md" "%OCFG%" >nul && findstr /c:"google.cloud_oauth.relay" "%OCFG%" >nul && findstr /c:"git push" "%OCFG%" >nul && (
+        echo [SKIP] %OCFG% already configured.
+        exit /b 0
     )
-    echo [WARN] %OCFG% exists. Add instructions / permissions manually, see README.
+    goto :opencode_warn
+)
+goto :opencode_create
+
+:opencode_check_basic
+findstr /c:"git push" "%OCFG%" >nul && (
+    echo [SKIP] %OCFG% already configured.
     exit /b 0
 )
+
+:opencode_warn
+echo [WARN] %OCFG% exists. Add instructions / permissions manually, see README.
+exit /b 0
+
+:opencode_create
 >"%OCFG%" echo {
 >>"%OCFG%" echo   "$schema": "https://opencode.ai/config.json",
-if /i not "%MACHINE%"=="general" (
+if /i not "%MACHINE%"=="general" if /i not "%MACHINE%"=="sandbox" (
     >>"%OCFG%" echo   "instructions": [
     >>"%OCFG%" echo     "D:/AI_Workspace/AGENTS.md"
     >>"%OCFG%" echo   ],
 )
 >>"%OCFG%" echo   "permissions": [
-if /i not "%MACHINE%"=="general" (
+if /i not "%MACHINE%"=="general" if /i not "%MACHINE%"=="sandbox" (
     >>"%OCFG%" echo     { "action": "read", "resource": "*google.cloud_oauth.relay*", "effect": "deny" },
 )
 >>"%OCFG%" echo     { "action": "shell", "resource": "git push *", "effect": "ask" }
