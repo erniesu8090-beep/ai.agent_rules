@@ -278,7 +278,7 @@ flowchart LR
 |---|---|---|---|
 | AI 寫程式 | `claude`（Claude Code）、`agy`（Antigravity）、`codex`（Codex）、`opencode`（OpenCode，支援 `opencode run` 背景子代理；未在 PATH 時用桌面 App） | 都要（`npm i -g @opencode/cli`） | Antigravity、`opencode`（免安裝獨立版，限用免費模型；無法使用 Claude Code、Codex） |
 | 版控 | `git`、`git-lfs`、`gh` | 都要 | GitSync 內附 PortableGit 與免安裝版 `gh`；防火牆於上班時間 `07:30~17:30` 開放 `github.com`／`api.github.com`，但依賴 `objects.githubusercontent.com` 的 `git-lfs`／`gh release download` 仍受限 |
-| Python | `python`（3.11）、`pip`、`uv` | 都要；Ubuntu 用 `uv` 取得 3.11 | 有 `py -3.11`（與 `3.12`，尚無 `3.13`）；`uv` 未確認 |
+| Python | `python`（3.11）、`pip`、`uv`、`ruff`、`ty` | 都要；Ubuntu 用 `uv` 取得 3.11；`ruff` 與 `ty` 用 `uv tool install` 安裝 | 有 `py -3.11`（與 `3.12`，尚無 `3.13`）；`uv`／`ruff`／`ty` 未確認 |
 | Node.js | `node`、`npm`、`npx` | 都要 | 不安裝（官方安裝檔需管理員權限） |
 | 雲端部署 | `wrangler`（Cloudflare，`npm i -g`）、`gcloud`／`gsutil`／`bq`（Google Cloud SDK） | 需要時安裝 | 不安裝（連線未確認） |
 | 雲端運算 | `colab`（Google Colab，`uv tool install google-colab-cli --python 3.12`） | Ubuntu 需要時安裝／Windows 不支援 | 不安裝（連線未確認、需 Python 3.12） |

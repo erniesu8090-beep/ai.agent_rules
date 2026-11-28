@@ -1,6 +1,6 @@
 # PROGRESS　進度與交接
 
-> 最後更新：2026-11-26（管制機）
+> 最後更新：2026-11-28（住家開發機）
 > 新對話接手：先讀 `AGENTS.md` → 本檔 → `README.md`「三、檔案總覽」
 
 ## 一、目前階段
@@ -230,3 +230,4 @@
 | 2026-11-24 | 住家開發機 | 實測免費版 Codex 已不掛載 `image_gen` 工具，調整生圖順序為 Antigravity 第一 → Gemini Web 第二 → Codex 第三（僅限 Plus／Pro 付費帳號）；同步更新規則、文件與 `ai.agent_skills` 技能說明，通過 4 項驗證並部署本機 |
 | 2026-11-25 | 住家開發機 | 根治住家機 Antigravity 偶發漏發圖卡：`global_rules.md` 第 8 行恢復禁寫冒號引導結尾句、新增開發機／通用機專用 `Stop` Hook（`templates/hooks/ag_stop_card_guard.py` + `tests/test_ag_stop_card_guard.py`）與 `install.bat`/`install.sh` 部署邏輯，盤點 14 個 Plugins 並通過單元測試與全部 4 項倉庫驗證 |
 | 2026-11-26 | 管制機 | 混合雙向吸收 Downloads 版（2026-11-26）1～4 項與現行規範：納入 `templates/deploy_nas/`、`machine_rules/sandbox.md`、`guidelines/` 2 檔、EGM／`/swarm` 卡片提示、`docs/` 最新官方查證（四種子代理／`Orchestrator`／雲端沙盒／`/prompt-audit`）與管制機日間網路放行；保留 Codex 支援、Stop Hook、美學、生圖、商業收納並維持公司／管制機 Python 3.11（NAS 容器用 3.13），通過全部驗證與 OpenCode CLI 唯讀審查 |
+| 2026-11-28 | 住家開發機 | 更新 README.md「開發用 CLI 清單」Python 列補入 `ruff` 與 `ty`（`uv tool install`），並完成住家開發機 CLI 盤點與建立 `~/.local/bin/opencode.cmd` 墊片銜接桌面版 `opencode-cli.exe` |
