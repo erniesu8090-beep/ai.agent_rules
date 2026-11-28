@@ -27,17 +27,18 @@
 
 ## 修改後的驗證方式
 
-1. 例：`.venv\Scripts\python -m py_compile src/*.py` 無錯誤。
+1. 例：`.venv\Scripts\python -m py_compile src/*.py`（或 `.venv\Scripts\python -m compileall -q src`）無錯誤；有 `.ps1` 時用 `powershell.exe` `Language.Parser` 驗證 5.1 語法通過。
 2. 例：只有使用者能實測的項目：＿＿＿（請 AI 說明測試步驟與預期結果）。
 3. bundle 匯入管制機後執行，確認畫面顯示的版本號正確；有錯誤時帶回 log 檔。
 
 <!-- 公司專案規則：開始（來源 ai.agent_rules/templates/AGENTS_company.md；更新時整段替換到「結束」標記，不要手動改這段） -->
 ## 公司專案規則
 
-> 公司規則版本：2026-11-26
+> 公司規則版本：2026-11-28
 
 ### 環境與同步
 - `.venv`、`runtime\`、大型壓縮檔不進 Git，每台各自建立；`.venv` 用 GitSync 的「管理專案 / .venv」建立或更新。
+- 開發期檢查工具（`ruff`、`ty` 等）僅裝在開發機，**不寫進公司專案 `requirements.txt`**（避免打包進 `python_env.zip` 或管制機多裝）；前端自動化巡檢若需 `playwright`，僅裝在該專案自己的 `.venv`，不裝全域。
 - 寫給管制機執行的程式：Python 3.11（管制機用 `py -3.11` 建 venv，執行一律用 `.venv\Scripts\python.exe`，不直接呼叫 `python`）；管制機主控台字碼頁是 950，讀寫檔案明確指定 `encoding="utf-8"`，給 Excel 開的 CSV 用 `utf-8-sig`。
 - 管制機上的指令只用 cmd、PowerShell 5.1 與免安裝工具。
 
@@ -59,7 +60,7 @@
 - 啟動器不使用 VBS 的 `Shell.Application`（`ShellExecute`）叫起外部程式，會被端點防毒行為監控攔截（2026-10-20 實測）；需要啟動 GUI 程式並置頂顯示時，優先使用 `.cmd`／`.bat`（`start`）。
 - 不需要管理員權限：不寫入 `C:\Program Files`、`C:\Windows`、`HKLM`，不修改防火牆或系統設定；輸出寫在專案資料夾或使用者資料夾。
 - 不在執行中下載並執行外部程式；需要連外網的功能，先請使用者在管制機實測能不能連。
-- `.ps1` 只用 PowerShell 5.1 語法。
+- `.ps1` 只用 PowerShell 5.1 語法，並以 `powershell.exe` 的 `Language.Parser` 驗證無誤（見 `guidelines/script_encoding.md`）。
 - 防毒相容性只能在管制機實測：由使用者分別雙擊 `.bat` 與 `.vbs` 啟動，確認沒有被攔截；回報時標示「需在管制機驗證」。
 
 ### 除錯與回報

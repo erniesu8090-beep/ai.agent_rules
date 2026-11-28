@@ -14,7 +14,15 @@
 |---|---|---|---|
 | `.bat` / `.cmd` | CRLF | **預設僅用 ASCII（英文）**；確需中文存 **ANSI / Big5（CP950）**（禁 UTF-8） | 1. 開頭加 `cd /d "%~dp0"`，路徑變數加雙引號。<br>2. 用 CP950 時避開次位元組為 `\`、`\|`、`^` 的字（許、功、蓋）。<br>3. 雙擊啟動 `.ps1` 寫 `powershell -NoProfile -ExecutionPolicy Bypass -File`（管制機終端不可直接執行含 Bypass 的命令，詳見 `machine_rules/controlled.md`）。 |
 | `.vbs` | CRLF | **僅用 ASCII** | `shell.Run` 啟 GUI 禁設 `0`（`SW_HIDE`）；防搶焦點與管制機防毒（禁呼 `Shell.Application`）限制下，啟 GUI 置頂優先用 `.cmd`／`.bat` 搭 `start`。 |
-| `.ps1` | CRLF | 含中文必須存 **UTF-8 with BOM** | 管制機或同事機主控台為 Windows PowerShell 5.1（字碼頁 950），**禁用 PS7 語法**（`?.`、`??`、`&&`／`||`、三元 `a ? b : c`、`ConvertFrom-Json -AsHashtable`、`ForEach-Object -Parallel`）。 |
+| `.ps1` | CRLF | 含中文必須存 **UTF-8 with BOM** | 管制機或同事機主控台為 Windows PowerShell 5.1（字碼頁 950），**禁用 PS7 語法**（`?.`、`??`、`&&`／`||`、三元 `a ? b : c`、`ConvertFrom-Json -AsHashtable`、`ForEach-Object -Parallel`），交付前必過 `Language.Parser` 驗證。 |
+
+### PowerShell 雙軌分流與 5.1 語法自動驗證
+
+- **終端分流**：開發機終端執行複雜命令或驗證流程時可優先使用 PowerShell 7（`pwsh`，支援 `&&` 串接與較穩的 UTF-8 輸出）；但**所有交付用 `.ps1` 與成品驗收**一律以 Windows PowerShell 5.1（`powershell.exe`）為準。
+- **交付前自動驗證（`Language.Parser`）**：修改 `.ps1` 後用 `powershell.exe` 檢查語法無誤才算通過：
+  ```powershell
+  powershell.exe -NoProfile -Command '$e=$null;$t=$null;[void][System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path "scripts\target.ps1"),[ref]$t,[ref]$e);if($e){$e|ForEach-Object{Write-Error $_.Message};exit 1}'
+  ```
 
 ## 3. Linux 腳本與跨平台相容
 
